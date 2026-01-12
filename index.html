@@ -1,12 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Levi Donaldson</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <h1>Welcome to the personal website of Levi Donaldson</h1>
-    <p> That's right, Levi Donaldson now owns this website. Suck it Levi Donaldson</p>
+  <header class="hero">
+    <div class="hero-inner">
+            <div class="portrait-wrap frame">
+        <img src="assets/portrait.jpeg" alt="Portrait of Levi Donaldson" class="portrait" />
+      </div>
+      <h1>Levi Donaldson</h1>
+      <h2>Head Idiot & Certified Goofball</h2>
+    </div>
+  </header>
+
+  <nav class="main-nav">
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="audio.html">Listen</a></li>
+      <li><a href="fasion.html">Fashion</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="about" class="section about">
+      <h3>About Me</h3>
+      <p>
+        Greetings humans! I'm Levi Donaldson. I wanted to buy this domain years ago but it was taken by some punk named Levi Donaldson.
+        I already have a website where I have a varitery of silly things so I'm not exacly sure what I'll do here but I'll figure it out.
+        I love film photography so I'm definitely gonna plug that here as well. I've also been getting more into fasion so I might put some of that here.
+        I've also been thinking of doing some sort of audio program or podcast thing so maybe that will go here too.
+        This is very much a "work in progress" so stay tuned for more updates!
+      </p>
+    </section>
+
+    <section id="projects" class="section projects">
+      <h3>Projects</h3>
+      <div class="cards">
+        <div class="card">
+          <h4>Wasd Warlords</h4>
+          <p>My first website. Maybe a little rough around the edges but it's come a long way.</p>
+          <a href="https://wasdwarlords.com/" class="card-link">Visit</a>
+        </div>
+        <div class="card">
+          <h4>Audio Projects</h4>
+          <p>Huge thanks to my Audio Post Production professor Jake Kludge for teaching me.</p>
+          <a href="audio.html" class="card-link">Explore</a>
+        </div>
+        <div class="card">
+          <h4>Fashion</h4>
+          <p>Daily fits and styles</p>
+          <a href="fasion.html" class="card-link">View</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="gallery" class="section gallery">
+      <h3> Photo Gallery</h3>
+      <div class="gallery-grid">
+        <div class="gallery-item">
+            <img src="assets/Photography/photo1.jpg" alt="Gallery Image 1" />
+        </div>
+        <div class="gallery-item">
+            <img src="assets/Photography/photo31.jpg" alt="Gallery Image 2" />
+        </div>
+        <div class="gallery-item">
+            <img src="assets/Photography/photo14.jpg" alt="Gallery Image 3" />
+        </div>
+        <div class="gallery-item">
+            <img src="assets/Photography/photo24.jpg" alt="Gallery Image 4" />
+        </div>
+      </div>
+    </section>
+
+        <section id="links" class="section links">
+      <h3>Links</h3>
+      <p>Check me out in all the right places!</p>
+      <ul class="link-list">
+        <li><a href="#" target="https://wasdwarlords.com/">Wasd Warlords</a></li>
+        <li><a href="#" target="https://www.instagram.com/2x6man26levi/">Instagram</a></li>
+        <li><a href="#" target="https://www.youtube.com/@brickman26levi15">YouTube</a></li>
+        <li><a href="#" target="https://open.spotify.com/user/315o4ex7ekwn5shsiquzwc4gv5eu">Spotify</a></li>
+      </ul>
+      <p class="links-note">Tip: If you follow me in the most places you win.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>©2026 <span id="year"></span> LeviDonaldson.com</p>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
