@@ -351,3 +351,27 @@ a:hover { text-decoration: underline; }
   .hero { padding-top: 4rem; }
   .cta-buttons { flex-direction: column; }
 }
+
+.poetry-cards .card {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.poetry-cards .card:hover {
+  transform: translateY(-4px);
+}
+
+.poem-display {
+  margin-top: 2rem;
+}
+
+.poem-content {
+  display: none;
+  font-style: italic;
+  line-height: 1.8;
+}
+
+.poem-placeholder {
+  opacity: 0.6;
+  font-style: italic;
+}
