@@ -1,0 +1,2482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PANEM // Gamemaker Tactical Arena Simulator</title>
+    <style>
+        /* =====================================================================
+           1. CAPITOL GAMEMAKER DESIGN SYSTEM (100% PURE CSS, ZERO DEPENDENCIES)
+           ===================================================================== */
+        :root {
+            --bg-obsidian: #07080c;
+            --bg-charcoal: #0f1219;
+            --bg-panel: #161a24;
+            --bg-panel-hover: #1e2433;
+            --border-subtle: #242b3d;
+            --border-gold: rgba(245, 158, 11, 0.45);
+            --gold-400: #fbbf24;
+            --gold-500: #f59e0b;
+            --gold-600: #d97706;
+            --crimson-400: #f87171;
+            --crimson-500: #ef4444;
+            --crimson-600: #dc2626;
+            --crimson-bg: rgba(127, 29, 29, 0.25);
+            --emerald-400: #34d399;
+            --emerald-500: #10b981;
+            --emerald-bg: rgba(6, 78, 59, 0.25);
+            --cyan-400: #22d3ee;
+            --cyan-500: #06b6d4;
+            --purple-400: #c084fc;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-display: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-obsidian);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.45;
+            overflow-x: hidden;
+        }
+
+        /* Custom Tactical Scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-obsidian); }
+        ::-webkit-scrollbar-thumb { background: #2d364d; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold-500); }
+
+        /* Layout & Utility Classes */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .flex-wrap { flex-wrap: wrap; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-1 { gap: 0.25rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .w-full { width: 100%; }
+        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* Typography */
+        .font-display { font-family: var(--font-display); letter-spacing: 0.04em; }
+        .font-mono { font-family: var(--font-mono); }
+        .text-gold { color: var(--gold-400); }
+        .text-crimson { color: var(--crimson-400); }
+        .text-emerald { color: var(--emerald-400); }
+        .text-cyan { color: var(--cyan-400); }
+        .text-purple { color: var(--purple-400); }
+        .text-muted { color: var(--text-muted); }
+        .text-dim { color: var(--text-dim); }
+        .text-xs { font-size: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-base { font-size: 1rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .font-bold { font-weight: 700; }
+
+        /* Header */
+        header {
+            background: rgba(15, 18, 25, 0.94);
+            border-bottom: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            backdrop-filter: blur(10px);
+            padding: 0.65rem 1.25rem;
+        }
+        .header-inner {
+            max-width: 1720px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+        .brand-emblem {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--gold-400), var(--gold-600));
+            color: var(--bg-obsidian);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.2rem;
+            box-shadow: 0 0 18px rgba(245, 158, 11, 0.3);
+        }
+
+        /* Buttons & Inputs */
+        .btn {
+            background: var(--bg-panel);
+            color: var(--text-main);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 0.45rem 0.85rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.16s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            user-select: none;
+        }
+        .btn:hover:not(:disabled) {
+            background: var(--bg-panel-hover);
+            border-color: #3b4663;
+            transform: translateY(-1px);
+        }
+        .btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold-400), var(--gold-600));
+            color: #090a0f;
+            border: none;
+            font-weight: 800;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
+        }
+        .btn-gold:hover:not(:disabled) {
+            background: linear-gradient(135deg, #fcd34d, var(--gold-500));
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+        }
+        .btn-crimson {
+            background: rgba(153, 27, 27, 0.45);
+            border-color: rgba(239, 68, 68, 0.45);
+            color: #fecaca;
+        }
+        .btn-crimson:hover:not(:disabled) {
+            background: rgba(185, 28, 28, 0.65);
+            border-color: var(--crimson-400);
+        }
+        .btn-cyan {
+            background: rgba(8, 145, 178, 0.22);
+            border-color: rgba(34, 211, 238, 0.4);
+            color: #a5f3fc;
+        }
+        .btn-cyan:hover:not(:disabled) {
+            background: rgba(8, 145, 178, 0.35);
+        }
+        .btn-sm { padding: 0.28rem 0.6rem; font-size: 0.72rem; border-radius: 6px; }
+        .btn-xs { padding: 0.18rem 0.45rem; font-size: 0.68rem; border-radius: 5px; }
+
+        input[type="text"], select, textarea {
+            background: var(--bg-obsidian);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            border-radius: 7px;
+            padding: 0.45rem 0.7rem;
+            font-size: 0.82rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        input[type="text"]:focus, select:focus, textarea:focus {
+            border-color: var(--gold-500);
+        }
+        input[type="range"] {
+            accent-color: var(--gold-500);
+            cursor: pointer;
+        }
+
+        /* Panels & Cards */
+        .panel {
+            background: var(--bg-charcoal);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .panel-header {
+            padding: 0.75rem 1rem;
+            background: rgba(22, 26, 36, 0.75);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        .badge {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 5px;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-obsidian);
+            text-transform: uppercase;
+        }
+        .badge-gold { background: rgba(245, 158, 11, 0.16); color: var(--gold-400); border-color: var(--border-gold); }
+        .badge-crimson { background: var(--crimson-bg); color: var(--crimson-400); border-color: rgba(239, 68, 68, 0.4); }
+        .badge-emerald { background: var(--emerald-bg); color: var(--emerald-400); border-color: rgba(16, 185, 129, 0.4); }
+        .badge-cyan { background: rgba(6, 182, 212, 0.16); color: var(--cyan-400); border-color: rgba(34, 211, 238, 0.4); }
+
+        /* =====================================================================
+           2. SETUP LOBBY LAYOUT
+           ===================================================================== */
+        .setup-container {
+            max-width: 1640px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        .setup-grid {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 1.25rem;
+            align-items: start;
+        }
+        @media (max-width: 1024px) {
+            .setup-grid { grid-template-columns: 1fr; }
+        }
+        .roster-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(245px, 1fr));
+            gap: 0.75rem;
+            max-height: 640px;
+            overflow-y: auto;
+            padding-right: 0.25rem;
+        }
+        .tribute-setup-card {
+            background: var(--bg-obsidian);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 0.75rem;
+            transition: border-color 0.15s;
+        }
+        .tribute-setup-card:hover { border-color: var(--border-gold); }
+        .stat-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+            margin-top: 0.6rem;
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: 0.66rem;
+        }
+        .stat-mini-box {
+            background: var(--bg-charcoal);
+            padding: 3px 2px;
+            border-radius: 4px;
+            border: 1px solid #1d2333;
+        }
+
+        /* =====================================================================
+           3. LIVE ARENA 3-COLUMN GAMEMAKER COMMAND CENTER
+           ===================================================================== */
+        .arena-container {
+            max-width: 1760px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0.85rem;
+            display: grid;
+            grid-template-columns: 310px 1fr 440px;
+            gap: 0.9rem;
+            min-height: calc(100vh - 64px);
+        }
+        @media (max-width: 1380px) {
+            .arena-container { grid-template-columns: 290px 1fr; }
+            .map-column { grid-column: 1 / -1; }
+        }
+        @media (max-width: 860px) {
+            .arena-container { grid-template-columns: 1fr; }
+        }
+
+        /* Vitals Progress Bars */
+        .bar-track {
+            width: 100%;
+            height: 6px;
+            background: #1e2433;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            transition: width 0.35s ease;
+        }
+
+        /* Narrative Feed Cards */
+        .event-card {
+            padding: 0.8rem 0.95rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-subtle);
+            border-left-width: 4px;
+            background: rgba(22, 26, 36, 0.65);
+            font-size: 0.86rem;
+            animation: fadeSlide 0.28s ease forwards;
+            position: relative;
+        }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .ev-combat { border-left-color: var(--crimson-500); background: rgba(127, 29, 29, 0.14); }
+        .ev-alliance { border-left-color: var(--emerald-500); background: rgba(6, 78, 59, 0.14); }
+        .ev-loot { border-left-color: var(--gold-500); background: rgba(146, 64, 14, 0.14); }
+        .ev-survival { border-left-color: #475569; }
+        .ev-system { border-left-color: var(--gold-400); background: linear-gradient(90deg, rgba(245, 158, 11, 0.16), rgba(22, 26, 36, 0.8)); border-color: var(--border-gold); }
+        .ev-gamemaker { border-left-color: var(--purple-400); background: rgba(88, 28, 135, 0.18); border-color: rgba(192, 132, 252, 0.4); }
+
+        .tribute-link {
+            color: #fff;
+            font-weight: 700;
+            background: none;
+            border: none;
+            border-bottom: 1px dashed rgba(251, 191, 36, 0.6);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: inherit;
+            padding: 0;
+        }
+        .tribute-link:hover { color: var(--gold-400); border-bottom-style: solid; }
+
+        /* =====================================================================
+           4. INTERACTIVE TACTICAL ARENA SVG MAP & INSPECTOR
+           ===================================================================== */
+        .map-wrapper {
+            position: relative;
+            background: radial-gradient(circle at center, #111927 0%, #07090f 100%);
+            border-bottom: 1px solid var(--border-subtle);
+            user-select: none;
+        }
+        #arenaSvgMap {
+            width: 100%;
+            height: auto;
+            display: block;
+            aspect-ratio: 1 / 1;
+            max-height: 440px;
+        }
+        .map-marker { cursor: pointer; transition: transform 0.2s ease; }
+        .map-marker:hover { filter: brightness(1.25); }
+        .map-pulse {
+            animation: pulseRing 2.2s infinite;
+            transform-origin: center;
+        }
+        @keyframes pulseRing {
+            0% { opacity: 0.85; }
+            50% { opacity: 0.25; }
+            100% { opacity: 0.85; }
+        }
+
+        /* =====================================================================
+           5. MODALS & TOASTS
+           ===================================================================== */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 4, 8, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-box {
+            background: var(--bg-charcoal);
+            border: 1px solid #333e59;
+            border-radius: 14px;
+            max-width: 860px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.85);
+        }
+        .toast-container {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            z-index: 80;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            pointer-events: none;
+        }
+        .toast {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-gold);
+            color: #fef3c7;
+            padding: 0.55rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            animation: fadeSlide 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOP COMMAND HEADER -->
+    <header>
+        <div class="header-inner">
+            <div class="flex items-center gap-3">
+                <div class="brand-emblem" title="Capitol Arena Command">&#9773;</div>
+                <div>
+                    <div class="font-display font-bold text-base text-gold" style="letter-spacing: 0.08em;">
+                        CAPITOL GAMEMAKER COMMAND
+                    </div>
+                    <div class="text-xs font-mono text-muted">
+                        PANEM TACTICAL ARENA SIMULATOR // LORE-ACCURATE EDITION
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+                <div id="hdrStatusBar" class="hidden flex items-center gap-3 font-mono text-xs" style="background: var(--bg-obsidian); padding: 0.35rem 0.8rem; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                    <span>PHASE: <strong id="hdrPhase" class="text-gold">PRE-GAMES</strong></span>
+                    <span class="text-dim">|</span>
+                    <span>ALIVE: <strong id="hdrAlive" class="text-emerald">0</strong>/<span id="hdrTotal">0</span></span>
+                    <span class="text-dim">|</span>
+                    <span>FALLEN: <strong id="hdrFallen" class="text-crimson">0</strong></span>
+                </div>
+
+                <button id="btnFallenSky" onclick="openMemorialModal()" class="btn hidden">
+                    <span>&#9760; Fallen Sky</span>
+                    <span id="fallenBadge" class="badge badge-crimson">0</span>
+                </button>
+
+                <button id="btnNewRoster" onclick="returnToSetup()" class="btn btn-crimson hidden">
+                    &#8634; Return to Reaping
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- TOAST NOTIFICATIONS -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- =====================================================================
+         VIEW 1: REAPING & TRIBUTE CONFIGURATION LOBBY
+         ===================================================================== -->
+    <main id="setupView" class="setup-container">
+        <!-- Preset Toolbar -->
+        <div class="panel" style="padding: 1rem 1.25rem; border-color: var(--border-gold);">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h1 class="font-display font-bold text-lg text-gold">THE REAPING // TRIBUTE ROSTER & PRESETS</h1>
+                    <p class="text-xs text-muted" style="margin-top: 2px;">
+                        Enlist friends, historical legends, internet memes, Panem icons, or pop-culture heroes (2 to 48 Tributes).
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="loadPreset('allStarChaos')" class="btn btn-gold">&#9733; All-Star Chaos Mix (24)</button>
+                    <button onclick="loadPreset('panem')" class="btn">&#127993; Panem Classics (12)</button>
+                    <button onclick="loadPreset('historical')" class="btn">&#9876; Historical Legends (12)</button>
+                    <button onclick="loadPreset('memes')" class="btn">&#128293; Internet & Memes (12)</button>
+                    <button onclick="loadPreset('popCulture')" class="btn">&#127916; Sci-Fi & Movies (12)</button>
+                    <button onclick="loadPreset('videoGames')" class="btn">&#127918; Video Games (12)</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="setup-grid">
+            <!-- Left Column: Custom Enlistment & Arena Settings -->
+            <div class="flex flex-col gap-4">
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="font-display font-bold text-sm text-gold">+ ENLIST CUSTOM TRIBUTE</span>
+                        <button type="button" onclick="randomizeForm()" class="btn btn-xs">Roll Stats</button>
+                    </div>
+                    <form id="enlistForm" onsubmit="handleEnlist(event)" style="padding: 1rem;" class="flex flex-col gap-3">
+                        <div>
+                            <label class="text-xs text-muted font-bold block" style="margin-bottom: 4px;">TRIBUTE NAME *</label>
+                            <input type="text" id="inpName" required placeholder="e.g. Florida Man, Joan of Arc, Your Friend..." class="w-full">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;">
+                            <div>
+                                <label class="text-xs text-muted font-bold block" style="margin-bottom: 4px;">DISTRICT</label>
+                                <select id="inpDistrict" class="w-full">
+                                    <option value="District 1">District 1 (Luxury)</option>
+                                    <option value="District 2">District 2 (Masonry)</option>
+                                    <option value="District 3">District 3 (Tech)</option>
+                                    <option value="District 4">District 4 (Fishing)</option>
+                                    <option value="District 5">District 5 (Power)</option>
+                                    <option value="District 6">District 6 (Transport)</option>
+                                    <option value="District 7">District 7 (Lumber)</option>
+                                    <option value="District 8">District 8 (Textiles)</option>
+                                    <option value="District 9">District 9 (Grain)</option>
+                                    <option value="District 10">District 10 (Livestock)</option>
+                                    <option value="District 11">District 11 (Agriculture)</option>
+                                    <option value="District 12" selected>District 12 (Mining)</option>
+                                    <option value="District 13">District 13 (Shadow)</option>
+                                    <option value="The Capitol">The Capitol</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-muted font-bold block" style="margin-bottom: 4px;">CATEGORY TAG</label>
+                                <select id="inpOrigin" class="w-full">
+                                    <option value="Friend / IRL">Friend / IRL</option>
+                                    <option value="Historical">Historical Figure</option>
+                                    <option value="Meme / Internet">Meme / Internet</option>
+                                    <option value="Panem Canon">Panem Canon</option>
+                                    <option value="Movie / TV">Movie / TV</option>
+                                    <option value="Video Game">Video Game</option>
+                                    <option value="Book / Myth">Book / Myth</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Stat Sliders -->
+                        <div style="background: var(--bg-obsidian); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-subtle);" class="flex flex-col gap-2">
+                            <div class="flex justify-between text-xs">
+                                <span class="font-bold text-muted">TRAINING SCORE ATTRIBUTES (1-10)</span>
+                                <span id="lblTotalPts" class="font-mono text-gold">25/50</span>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs"><span>Strength (Melee & Carry)</span><strong id="vStr" class="font-mono">5</strong></div>
+                                <input type="range" id="sStr" min="1" max="10" value="5" oninput="syncFormStats()" class="w-full">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs"><span>Agility (Speed & Evasion)</span><strong id="vAgi" class="font-mono">5</strong></div>
+                                <input type="range" id="sAgi" min="1" max="10" value="5" oninput="syncFormStats()" class="w-full">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs"><span>Survival / IQ (Forage & Traps)</span><strong id="vInt" class="font-mono">5</strong></div>
+                                <input type="range" id="sInt" min="1" max="10" value="5" oninput="syncFormStats()" class="w-full">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs"><span>Combat Lethality</span><strong id="vCom" class="font-mono">5</strong></div>
+                                <input type="range" id="sCom" min="1" max="10" value="5" oninput="syncFormStats()" class="w-full">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs"><span>Charisma (Sponsors & Allies)</span><strong id="vCha" class="font-mono">5</strong></div>
+                                <input type="range" id="sCha" min="1" max="10" value="5" oninput="syncFormStats()" class="w-full">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-gold w-full" style="padding: 0.6rem;">+ ADD TRIBUTE TO ARENA</button>
+                    </form>
+                </div>
+
+                <!-- Simulation Parameters & JSON I/O -->
+                <div class="panel" style="padding: 1rem;">
+                    <div class="font-display font-bold text-xs text-gold" style="margin-bottom: 0.65rem;">ARENA PARAMETERS & DATA</div>
+                    <div class="flex flex-col gap-3">
+                        <div>
+                            <div class="flex justify-between text-xs" style="margin-bottom: 3px;">
+                                <span class="text-muted">Arena Pacing &amp; Bloodbath Lethality</span>
+                                <strong id="lblLethality" class="font-mono text-crimson">Movie Canon (~50% Bloodbath)</strong>
+                            </div>
+                            <select id="sLethality" onchange="updateLethality()" class="w-full">
+                                <option value="standard" selected>Movie / Book Canon (~50% Bloodbath, Fast Pacing)</option>
+                                <option value="brutal">Brutal Massacre (~65% Bloodbath, Hyper-Lethal)</option>
+                                <option value="slow">Slow Burn (~25% Bloodbath, Tactical Survival)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs" style="margin-bottom: 3px;">
+                                <span class="text-muted">Upset / Chaos Factor</span>
+                                <strong id="lblChaos" class="font-mono text-gold">35% (Balanced)</strong>
+                            </div>
+                            <input type="range" id="sChaos" min="10" max="80" value="35" oninput="updateChaos()" class="w-full">
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="autoFillRoster(24)" class="btn btn-sm" style="flex:1;">Auto-Fill to 24</button>
+                            <button onclick="exportRosterJSON()" class="btn btn-sm" style="flex:1;">Export JSON</button>
+                            <label class="btn btn-sm" style="flex:1; cursor:pointer;">
+                                Import JSON
+                                <input type="file" accept=".json" onchange="importRosterJSON(event)" class="hidden">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Active Roster Grid -->
+            <div class="panel" style="padding: 1rem;">
+                <div class="flex flex-wrap items-center justify-between gap-3" style="padding-bottom: 0.85rem; margin-bottom: 0.85rem; border-bottom: 1px solid var(--border-subtle);">
+                    <div>
+                        <h2 class="font-display font-bold text-base">ENLISTED TRIBUTES (<span id="lblRosterCount" class="text-gold">0</span>)</h2>
+                        <p class="text-xs text-muted">District partners begin with +45 Affinity. Career tributes (D1, D2, D4) form an early pack.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="clearRoster()" class="btn btn-crimson btn-sm">Clear All</button>
+                        <button onclick="launchHungerGames()" class="btn btn-gold" style="padding: 0.55rem 1.2rem; font-size: 0.85rem;">
+                            &#9654; LAUNCH THE 76TH HUNGER GAMES
+                        </button>
+                    </div>
+                </div>
+
+                <div id="setupRosterGrid" class="roster-cards-grid"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- =====================================================================
+         VIEW 2: LIVE ARENA 3-COLUMN GAMEMAKER COMMAND CENTER
+         ===================================================================== -->
+    <main id="arenaView" class="arena-container hidden">
+
+        <!-- COLUMN 1: TRIBUTE VITALS & BIOMETRIC ROSTER -->
+        <section class="panel flex flex-col" style="max-height: calc(100vh - 86px);">
+            <div class="panel-header">
+                <span class="font-display font-bold text-xs text-gold">TRIBUTE VITALS</span>
+                <select id="rosterFilter" onchange="renderVitalsSidebar()" style="padding: 0.2rem 0.45rem; font-size: 0.72rem;">
+                    <option value="all">All Tributes</option>
+                    <option value="alive">Alive Only</option>
+                    <option value="dead">Fallen Only</option>
+                </select>
+            </div>
+            <div class="text-xs text-dim" style="padding: 0.4rem 0.75rem; background: var(--bg-obsidian); border-bottom: 1px solid var(--border-subtle);">
+                Click any tribute to inspect Inventory Provenance, Sanity & Relationships.
+            </div>
+            <div id="vitalsList" class="flex flex-col gap-2" style="padding: 0.65rem; overflow-y: auto; flex: 1;"></div>
+        </section>
+
+        <!-- COLUMN 2: NARRATIVE LOG FEED & GAMEMAKER INTERVENTION SUITE -->
+        <section class="panel flex flex-col" style="max-height: calc(100vh - 86px);">
+            <!-- Phase & Time-Rewind Control Bar -->
+            <div class="panel-header" style="background: rgba(22, 26, 36, 0.92);">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span id="badgePhaseType" class="badge badge-gold">BLOODBATH</span>
+                        <span id="badgeArenaWeather" class="badge">CLEAR SKIES</span>
+                    </div>
+                    <h2 id="lblPhaseHeadline" class="font-display font-bold text-base" style="margin-top: 4px;">
+                        60-Second Countdown Complete: The Cornucopia Bloodbath
+                    </h2>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <button id="btnRewind" onclick="rewindPhase()" class="btn btn-sm" title="Undo last phase and restore exact previous arena state" disabled>
+                        &#9194; Rewind (<span id="rewindCount">0</span>)
+                    </button>
+                    <button id="btnAutoPlay" onclick="toggleAutoPlay()" class="btn btn-sm">
+                        <span id="autoPlayLbl">&#9654; Auto</span>
+                    </button>
+                    <select id="selSpeed" style="padding: 0.28rem 0.4rem; font-size: 0.72rem;">
+                        <option value="2200">1x</option>
+                        <option value="1100" selected>2x</option>
+                        <option value="450">4x</option>
+                    </select>
+                    <button id="btnProceed" onclick="advancePhase()" class="btn btn-gold">
+                        PROCEED &#9654;
+                    </button>
+                </div>
+            </div>
+
+            <!-- GAMEMAKER LIVE INTERVENTION CONSOLE -->
+            <div style="padding: 0.55rem 0.85rem; background: #0c0e15; border-bottom: 1px solid var(--border-subtle);">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="font-mono text-xs text-purple font-bold">&#9881; GAMEMAKER OVERRIDES:</span>
+                    <div class="flex flex-wrap items-center gap-1">
+                        <select id="liveLethalitySel" onchange="setLiveLethality(this.value)" style="padding: 0.16rem 0.35rem; font-size: 0.68rem;" title="Adjust live arena lethality">
+                            <option value="standard">Pacing: Movie Canon</option>
+                            <option value="brutal">Pacing: Brutal</option>
+                            <option value="slow">Pacing: Slow Burn</option>
+                        </select>
+                        <button onclick="openGamemakerActionModal('sponsor')" class="btn btn-xs btn-gold">&#129666; Drop Sponsor Gift</button>
+                        <button onclick="openGamemakerActionModal('encounter')" class="btn btn-xs btn-cyan">&#9876; Force Encounter</button>
+                        <button onclick="openGamemakerActionModal('hazard')" class="btn btn-xs btn-crimson">&#128293; Trigger Hazard / Mutts</button>
+                        <button onclick="triggerManualFeast()" class="btn btn-xs">&#127869; Call Feast</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Category Filter Bar -->
+            <div class="flex flex-wrap items-center justify-between gap-2" style="padding: 0.45rem 0.85rem; background: var(--bg-obsidian); border-bottom: 1px solid var(--border-subtle);">
+                <div class="flex flex-wrap gap-1">
+                    <button onclick="setLogFilter('all')" data-lf="all" class="lf-btn btn btn-xs btn-gold">All Events</button>
+                    <button onclick="setLogFilter('combat')" data-lf="combat" class="lf-btn btn btn-xs">Combat & Kills</button>
+                    <button onclick="setLogFilter('alliance')" data-lf="alliance" class="lf-btn btn btn-xs">Alliances & Betrayal</button>
+                    <button onclick="setLogFilter('loot')" data-lf="loot" class="lf-btn btn btn-xs">Loot & Sponsors</button>
+                    <button onclick="setLogFilter('survival')" data-lf="survival" class="lf-btn btn btn-xs">Survival & Hazards</button>
+                </div>
+                <span class="text-xs font-mono text-dim">Click [Reroll] or [Edit] on any event</span>
+            </div>
+
+            <!-- Scrollable Narrative Events -->
+            <div id="narrativeFeed" class="flex flex-col gap-2" style="padding: 0.85rem; overflow-y: auto; flex: 1;"></div>
+        </section>
+
+        <!-- COLUMN 3: INTERACTIVE TACTICAL ARENA MAP & LIVE ZONE INSPECTOR -->
+        <section class="panel map-column flex flex-col" style="max-height: calc(100vh - 86px);">
+            <div class="panel-header">
+                <span class="font-display font-bold text-xs text-gold">&#128506; LIVE PANEM ARENA RADAR</span>
+                <div class="flex items-center gap-1">
+                    <select id="mapHighlightSelect" onchange="renderArenaMap()" style="padding: 0.2rem 0.4rem; font-size: 0.7rem; max-width: 145px;">
+                        <option value="all">Show All Tributes</option>
+                        <option value="alliances">Show Alliance Links</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Interactive SVG Tactical Arena Map -->
+            <div class="map-wrapper">
+                <svg id="arenaSvgMap" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="arenaBgGrad" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#1b2234" />
+                            <stop offset="70%" stop-color="#0e131f" />
+                            <stop offset="100%" stop-color="#07090f" />
+                        </radialGradient>
+                        <radialGradient id="cornucopiaGrad" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="rgba(245, 158, 11, 0.32)" />
+                            <stop offset="100%" stop-color="rgba(245, 158, 11, 0.03)" />
+                        </radialGradient>
+                    </defs>
+
+                    <!-- Outer Perimeter Forcefield -->
+                    <circle cx="250" cy="250" r="240" fill="url(#arenaBgGrad)" stroke="#2c3650" stroke-width="2" stroke-dasharray="6 4" />
+                    <circle cx="250" cy="250" r="175" fill="none" stroke="#1c2336" stroke-width="1" />
+                    <circle cx="250" cy="250" r="110" fill="none" stroke="#1c2336" stroke-width="1" />
+
+                    <!-- Biome Sectors -->
+                    <!-- North-West: Whispering Woods -->
+                    <path d="M 250 250 L 80 80 A 240 240 0 0 1 420 80 Z" fill="rgba(16, 185, 129, 0.06)" stroke="rgba(16, 185, 129, 0.15)" />
+                    <!-- East: Poison Lake & River -->
+                    <path d="M 250 250 L 420 80 A 240 240 0 0 1 420 420 Z" fill="rgba(6, 182, 212, 0.07)" stroke="rgba(6, 182, 212, 0.18)" />
+                    <!-- South: Scorched Ridge & Muttation Cavern -->
+                    <path d="M 250 250 L 420 420 A 240 240 0 0 1 80 420 Z" fill="rgba(239, 68, 68, 0.07)" stroke="rgba(239, 68, 68, 0.16)" />
+                    <!-- West: Mockingjay Canopy & Ruins -->
+                    <path d="M 250 250 L 80 420 A 240 240 0 0 1 80 80 Z" fill="rgba(192, 132, 252, 0.06)" stroke="rgba(192, 132, 252, 0.15)" />
+
+                    <!-- River Winding Path -->
+                    <path d="M 290 215 Q 370 190 445 250 T 370 390" fill="none" stroke="rgba(34, 211, 238, 0.25)" stroke-width="8" stroke-linecap="round" />
+
+                    <!-- Center: The Golden Cornucopia -->
+                    <circle cx="250" cy="250" r="56" fill="url(#cornucopiaGrad)" stroke="rgba(245, 158, 11, 0.5)" stroke-width="1.5" />
+                    <polygon points="250,232 266,262 234,262" fill="rgba(251, 191, 36, 0.65)" stroke="#fbbf24" stroke-width="1" />
+
+                    <!-- Zone Labels -->
+                    <text x="250" y="38" text-anchor="middle" fill="#34d399" font-size="10" font-family="monospace" font-weight="bold" opacity="0.85">WHISPERING WOODS</text>
+                    <text x="428" y="253" text-anchor="middle" fill="#22d3ee" font-size="10" font-family="monospace" font-weight="bold" opacity="0.85" transform="rotate(90 428 253)">POISON LAKE &amp; RIVER</text>
+                    <text x="250" y="472" text-anchor="middle" fill="#f87171" font-size="10" font-family="monospace" font-weight="bold" opacity="0.85">SCORCHED RIDGE / MUTT CAVES</text>
+                    <text x="68" y="253" text-anchor="middle" fill="#c084fc" font-size="10" font-family="monospace" font-weight="bold" opacity="0.85" transform="rotate(-90 68 253)">MOCKINGJAY RUINS</text>
+                    <text x="250" y="276" text-anchor="middle" fill="#fbbf24" font-size="9" font-family="monospace" font-weight="bold">CORNUCOPIA</text>
+
+                    <!-- Dynamic Layers populated by JS -->
+                    <g id="mapHazardLayer"></g>
+                    <g id="mapAllianceLayer"></g>
+                    <g id="mapFallenLayer"></g>
+                    <g id="mapTributeLayer"></g>
+                </svg>
+            </div>
+
+            <!-- Tactical Map Legend & Instant Tribute Inspector -->
+            <div style="padding: 0.75rem; overflow-y: auto; flex: 1;" class="flex flex-col gap-2">
+                <div class="flex flex-wrap items-center justify-between text-xs text-muted" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.45rem;">
+                    <span>&#9679; Active Tribute</span>
+                    <span class="text-emerald">&#9135; Active Alliance</span>
+                    <span class="text-crimson">&#10006; Fallen Cannon</span>
+                </div>
+
+                <!-- Selected Map Tribute Quick Tactical Card -->
+                <div id="mapInspectorCard" style="background: var(--bg-obsidian); border: 1px solid var(--border-subtle); border-radius: 9px; padding: 0.75rem;">
+                    <div class="text-xs text-muted" style="text-align: center; padding: 1rem 0;">
+                        Click any tribute marker on the Arena Map above to inspect their exact biome coordinates, inventory, and status.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- =====================================================================
+         MODAL 1: FULL TRIBUTE DOSSIER (INVENTORY PROVENANCE & RELATIONSHIPS)
+         ===================================================================== -->
+    <div id="dossierModal" class="modal-backdrop hidden">
+        <div class="modal-box">
+            <div class="panel-header" style="padding: 1rem 1.25rem;">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 id="dosTitle" class="font-display font-bold text-lg">Tribute Name</h3>
+                        <span id="dosBadge" class="badge badge-emerald">ALIVE</span>
+                    </div>
+                    <p id="dosSub" class="text-xs text-muted" style="margin-top: 2px;">District 12 • Zone: Cornucopia • Kills: 0</p>
+                </div>
+                <button onclick="closeModal('dossierModal')" class="btn btn-sm">&#10005; Close</button>
+            </div>
+
+            <div style="padding: 1.1rem; overflow-y: auto;" class="flex flex-col gap-4">
+                <!-- Biometrics & Core Attributes -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.85rem;">
+                    <div style="background: var(--bg-obsidian); padding: 0.85rem; border-radius: 10px; border: 1px solid var(--border-subtle);" class="flex flex-col gap-2">
+                        <div class="font-mono text-xs text-gold font-bold">BIOMETRIC TELEMETRY</div>
+                        <div>
+                            <div class="flex justify-between text-xs"><span>Health (HP)</span><strong id="dosHp" class="font-mono text-emerald">100/100</strong></div>
+                            <div class="bar-track"><div id="dosHpBar" class="bar-fill" style="width:100%; background: var(--emerald-500);"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs"><span>Hunger & Hydration</span><strong id="dosHun" class="font-mono text-cyan">100/100</strong></div>
+                            <div class="bar-track"><div id="dosHunBar" class="bar-fill" style="width:100%; background: var(--cyan-500);"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs"><span>Sanity & Morale</span><strong id="dosSan" class="font-mono text-purple">100/100</strong></div>
+                            <div class="bar-track"><div id="dosSanBar" class="bar-fill" style="width:100%; background: var(--purple-400);"></div></div>
+                        </div>
+                        <div id="dosDeathBox" class="hidden text-xs text-crimson font-bold" style="margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--border-subtle);"></div>
+                    </div>
+
+                    <div style="background: var(--bg-obsidian); padding: 0.85rem; border-radius: 10px; border: 1px solid var(--border-subtle);">
+                        <div class="font-mono text-xs text-gold font-bold" style="margin-bottom: 0.5rem;">CAPITOL TRAINING SCORES</div>
+                        <div id="dosStatsList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;" class="text-xs"></div>
+                    </div>
+                </div>
+
+                <!-- Inventory & Item Provenance Ledger -->
+                <div style="background: var(--bg-obsidian); padding: 0.85rem; border-radius: 10px; border: 1px solid var(--border-subtle);">
+                    <div class="flex justify-between items-center" style="margin-bottom: 0.5rem;">
+                        <span class="font-mono text-xs text-gold font-bold">INVENTORY & ACQUISITION PROVENANCE</span>
+                        <span id="dosInvCount" class="font-mono text-xs text-muted">0 Items</span>
+                    </div>
+                    <div id="dosInvList" class="flex flex-col gap-2"></div>
+                </div>
+
+                <!-- Pairwise Relationship Matrix -->
+                <div style="background: var(--bg-obsidian); padding: 0.85rem; border-radius: 10px; border: 1px solid var(--border-subtle);">
+                    <div class="font-mono text-xs text-cyan font-bold" style="margin-bottom: 0.5rem;">RELATIONSHIP & ALLIANCE MATRIX</div>
+                    <div id="dosRelList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; max-height: 200px; overflow-y: auto;"></div>
+                </div>
+
+                <!-- Chronological Personal History -->
+                <div style="background: var(--bg-obsidian); padding: 0.85rem; border-radius: 10px; border: 1px solid var(--border-subtle);">
+                    <div class="font-mono text-xs text-muted font-bold" style="margin-bottom: 0.5rem;">ARENA CHRONICLE</div>
+                    <div id="dosTimeline" class="flex flex-col gap-1 text-xs" style="max-height: 160px; overflow-y: auto;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL 2: EVENT OUTCOME EDITOR ("CHANGE OUTCOMES YOU DON'T LIKE")
+         ===================================================================== -->
+    <div id="editEventModal" class="modal-backdrop hidden">
+        <div class="modal-box" style="max-width: 580px;">
+            <div class="panel-header">
+                <span class="font-display font-bold text-sm text-gold">&#9998; GAMEMAKER OUTCOME OVERRIDE</span>
+                <button onclick="closeModal('editEventModal')" class="btn btn-xs">&#10005;</button>
+            </div>
+            <div style="padding: 1.1rem;" class="flex flex-col gap-3">
+                <p class="text-xs text-muted">
+                    Modify the narrative text or directly alter who lives, dies, or forms an alliance in this event.
+                </p>
+                <div>
+                    <label class="text-xs font-bold text-muted block" style="margin-bottom: 4px;">NARRATIVE LOG TEXT</label>
+                    <textarea id="editLogText" rows="3" class="w-full"></textarea>
+                </div>
+
+                <div style="background: var(--bg-obsidian); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-subtle);" class="flex flex-col gap-2">
+                    <div class="font-mono text-xs text-gold font-bold">DIRECT OUTCOME OVERRIDE (OPTIONAL)</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <div>
+                            <label class="text-xs text-muted block">Subject / Victor</label>
+                            <select id="editSubjSelect" class="w-full"></select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-muted block">Target / Victim</label>
+                            <select id="editTargSelect" class="w-full"></select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs text-muted block">Action / Fate Override</label>
+                        <select id="editActionSelect" class="w-full">
+                            <option value="textOnly">Update Narrative Text Only</option>
+                            <option value="killTarget">Subject Eliminates Target (Fatal)</option>
+                            <option value="reviveTarget">Spare / Revive Target (Both Survive)</option>
+                            <option value="allyPair">Force Strong Alliance (+60 Affinity)</option>
+                            <option value="sponsorHeal">Sponsor Parachute (+40 HP & Full Hydration to Subject)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2">
+                    <button onclick="closeModal('editEventModal')" class="btn">Cancel</button>
+                    <button onclick="saveEditedEvent()" class="btn btn-gold">Apply Gamemaker Override</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL 3: LIVE GAMEMAKER CONSOLE ACTIONS (SPONSOR, ENCOUNTER, HAZARD)
+         ===================================================================== -->
+    <div id="gmActionModal" class="modal-backdrop hidden">
+        <div class="modal-box" style="max-width: 520px;">
+            <div class="panel-header">
+                <span id="gmModalTitle" class="font-display font-bold text-sm text-gold">GAMEMAKER DIRECTIVE</span>
+                <button onclick="closeModal('gmActionModal')" class="btn btn-xs">&#10005;</button>
+            </div>
+            <div id="gmModalBody" style="padding: 1.1rem;" class="flex flex-col gap-3"></div>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL 4: FALLEN SKY MEMORIAL
+         ===================================================================== -->
+    <div id="memorialModal" class="modal-backdrop hidden">
+        <div class="modal-box" style="max-width: 720px;">
+            <div class="panel-header">
+                <span class="font-display font-bold text-base text-gold">&#9733; NIGHT SKY PROJECTION // THE FALLEN</span>
+                <button onclick="closeModal('memorialModal')" class="btn btn-xs">&#10005; Close</button>
+            </div>
+            <div id="memorialGrid" style="padding: 1rem; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.75rem;"></div>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         JAVASCRIPT ENGINE (100% VANILLA JS, ZERO EXTERNAL LIBRARIES)
+         ===================================================================== -->
+    <script>
+        // =====================================================================
+        // 1. LORE-ACCURATE ITEMS, BIOMES & EXPANDED CHARACTER PRESETS
+        // =====================================================================
+        const ARENA_ZONES = {
+            cornucopia: { name: "The Golden Cornucopia", cx: 250, cy: 250, r: 44, color: "#fbbf24" },
+            woods:      { name: "Whispering Woods", cx: 250, cy: 110, r: 65, color: "#34d399" },
+            lake:       { name: "Poison Lake & River", cx: 385, cy: 250, r: 60, color: "#22d3ee" },
+            ridge:      { name: "Scorched Ridge & Mutt Caves", cx: 250, cy: 385, r: 65, color: "#f87171" },
+            ruins:      { name: "Mockingjay Canopy & Ruins", cx: 115, cy: 250, r: 60, color: "#c084fc" }
+        };
+
+        const DISTRICT_COLORS = {
+            "District 1": "#fbbf24", "District 2": "#ef4444", "District 3": "#38bdf8",
+            "District 4": "#2dd4bf", "District 5": "#a855f7", "District 6": "#f97316",
+            "District 7": "#22c55e", "District 8": "#ec4899", "District 9": "#eab308",
+            "District 10": "#a16207", "District 11": "#10b981", "District 12": "#94a3b8",
+            "District 13": "#64748b", "The Capitol": "#f43f5e"
+        };
+
+        const ITEM_DB = {
+            weapons: [
+                { name: "Silver Bow & Sheaf of Arrows", type: "weapon", power: 9, verb: "pierces through the heart of" },
+                { name: "Weighted District 4 Trident", type: "weapon", power: 9, verb: "impales" },
+                { name: "Serrated Career Broadsword", type: "weapon", power: 8, verb: "cleaves" },
+                { name: "Balanced Throwing Knives (x6)", type: "weapon", power: 7, verb: "strikes" },
+                { name: "Steel-Headed Hunting Spear", type: "weapon", power: 7, verb: "runs through" },
+                { name: "Tactical Forest Axe", type: "weapon", power: 7, verb: "hacks down" },
+                { name: "Spiked Morning Star Mace", type: "weapon", power: 8, verb: "crushes" },
+                { name: "Blowgun with Tracker Jacker Darts", type: "weapon", power: 6, verb: "envenoms" },
+                { name: "Machete", type: "weapon", power: 6, verb: "slashes" },
+                { name: "Fire-Hardened Wooden Pike", type: "weapon", power: 4, verb: "jabs" }
+            ],
+            armor: [
+                { name: "Capitol Kevlar-Mesh Body Armor", type: "armor", defense: 28 },
+                { name: "Reinforced Leather Bracers", type: "armor", defense: 14 },
+                { name: "Riot Shield", type: "armor", defense: 22 }
+            ],
+            medical: [
+                { name: "Capitol Burn & Trauma Salve", type: "medical", heal: 45 },
+                { name: "Silver Parachute Medkit & Antibiotics", type: "medical", heal: 55 },
+                { name: "Tracker Jacker Sting Leaf Poultice", type: "medical", heal: 25 }
+            ],
+            supplies: [
+                { name: "Brass Water Spile & Iodine Drops", type: "supply", hunger: 45 },
+                { name: "Sponsor Hot Broth & District Rolls", type: "supply", hunger: 50 },
+                { name: "Thermal Night-Vision Glasses", type: "utility", bonus: "ambush" },
+                { name: "Camouflage Cloak & Wire", type: "utility", bonus: "stealth" }
+            ]
+        };
+
+        const PRESETS = {
+            panem: [
+                { name: "Katniss Everdeen", district: "District 12", origin: "Panem Canon", str: 6, agi: 9, int: 9, com: 9, cha: 8 },
+                { name: "Peeta Mellark", district: "District 12", origin: "Panem Canon", str: 8, agi: 4, int: 7, com: 5, cha: 10 },
+                { name: "Finnick Odair", district: "District 4", origin: "Panem Canon", str: 8, agi: 9, int: 8, com: 10, cha: 10 },
+                { name: "Johanna Mason", district: "District 7", origin: "Panem Canon", str: 7, agi: 8, int: 9, com: 9, cha: 6 },
+                { name: "Cato", district: "District 2", origin: "Panem Canon", str: 10, agi: 6, int: 5, com: 9, cha: 6 },
+                { name: "Clove", district: "District 2", origin: "Panem Canon", str: 6, agi: 9, int: 7, com: 9, cha: 5 },
+                { name: "Rue", district: "District 11", origin: "Panem Canon", str: 3, agi: 10, int: 9, com: 4, cha: 9 },
+                { name: "Thresh", district: "District 11", origin: "Panem Canon", str: 10, agi: 7, int: 7, com: 8, cha: 5 },
+                { name: "Foxface", district: "District 5", origin: "Panem Canon", str: 4, agi: 9, int: 10, com: 4, cha: 6 },
+                { name: "Haymitch Abernathy", district: "District 12", origin: "Panem Canon", str: 7, agi: 6, int: 10, com: 8, cha: 8 },
+                { name: "Gale Hawthorne", district: "District 12", origin: "Panem Canon", str: 8, agi: 8, int: 9, com: 8, cha: 6 },
+                { name: "Beetee Latier", district: "District 3", origin: "Panem Canon", str: 4, agi: 4, int: 10, com: 4, cha: 7 }
+            ],
+            historical: [
+                { name: "Miyamoto Musashi", district: "District 2", origin: "Historical", str: 8, agi: 9, int: 9, com: 10, cha: 6 },
+                { name: "Joan of Arc", district: "District 11", origin: "Historical", str: 7, agi: 7, int: 8, com: 8, cha: 10 },
+                { name: "Genghis Khan", district: "District 10", origin: "Historical", str: 9, agi: 8, int: 9, com: 9, cha: 8 },
+                { name: "Cleopatra", district: "The Capitol", origin: "Historical", str: 4, agi: 6, int: 10, com: 5, cha: 10 },
+                { name: "Teddy Roosevelt", district: "District 7", origin: "Historical", str: 9, agi: 6, int: 8, com: 8, cha: 9 },
+                { name: "Harriet Tubman", district: "District 13", origin: "Historical", str: 6, agi: 9, int: 10, com: 7, cha: 9 },
+                { name: "Leonardo da Vinci", district: "District 3", origin: "Historical", str: 5, agi: 6, int: 10, com: 5, cha: 8 },
+                { name: "Julius Caesar", district: "District 1", origin: "Historical", str: 7, agi: 7, int: 9, com: 8, cha: 10 },
+                { name: "Spartacus", district: "District 2", origin: "Historical", str: 9, agi: 8, int: 7, com: 10, cha: 8 },
+                { name: "Alexander the Great", district: "District 1", origin: "Historical", str: 8, agi: 8, int: 9, com: 9, cha: 10 },
+                { name: "Boudica", district: "District 9", origin: "Historical", str: 8, agi: 7, int: 8, com: 9, cha: 9 },
+                { name: "Nikola Tesla", district: "District 5", origin: "Historical", str: 4, agi: 5, int: 10, com: 4, cha: 7 }
+            ],
+            memes: [
+                { name: "Florida Man", district: "District 4", origin: "Meme / Internet", str: 8, agi: 8, int: 3, com: 8, cha: 7 },
+                { name: "GigaChad", district: "District 1", origin: "Meme / Internet", str: 10, agi: 7, int: 7, com: 9, cha: 10 },
+                { name: "MrBeast", district: "The Capitol", origin: "Meme / Internet", str: 5, agi: 6, int: 8, com: 4, cha: 10 },
+                { name: "Shrek", district: "District 11", origin: "Meme / Internet", str: 10, agi: 6, int: 7, com: 8, cha: 8 },
+                { name: "Chuck Norris", district: "District 2", origin: "Meme / Internet", str: 10, agi: 9, int: 8, com: 10, cha: 8 },
+                { name: "Rick Astley", district: "District 8", origin: "Meme / Internet", str: 5, agi: 7, int: 7, com: 5, cha: 10 },
+                { name: "Doge", district: "District 10", origin: "Meme / Internet", str: 4, agi: 10, int: 6, com: 5, cha: 10 },
+                { name: "Keanu Reeves", district: "District 12", origin: "Meme / Internet", str: 8, agi: 8, int: 8, com: 9, cha: 10 },
+                { name: "Shaggy (2% Power)", district: "District 9", origin: "Meme / Internet", str: 7, agi: 10, int: 6, com: 8, cha: 8 },
+                { name: "MatPat (Game Theory)", district: "District 3", origin: "Meme / Internet", str: 4, agi: 6, int: 10, com: 4, cha: 9 },
+                { name: "Gordon Ramsay", district: "District 10", origin: "Meme / Internet", str: 7, agi: 6, int: 8, com: 7, cha: 8 },
+                { name: "Nyan Cat", district: "District 5", origin: "Meme / Internet", str: 3, agi: 10, int: 5, com: 4, cha: 9 }
+            ],
+            popCulture: [
+                { name: "John Wick", district: "District 2", origin: "Movie / TV", str: 8, agi: 8, int: 8, com: 10, cha: 6 },
+                { name: "Ellen Ripley", district: "District 5", origin: "Movie / TV", str: 7, agi: 7, int: 9, com: 8, cha: 7 },
+                { name: "Aragorn", district: "District 7", origin: "Book / Myth", str: 9, agi: 8, int: 9, com: 10, cha: 9 },
+                { name: "Hermione Granger", district: "District 3", origin: "Book / Myth", str: 4, agi: 6, int: 10, com: 6, cha: 8 },
+                { name: "Batman", district: "District 13", origin: "Movie / TV", str: 8, agi: 9, int: 10, com: 10, cha: 6 },
+                { name: "Wednesday Addams", district: "District 13", origin: "Movie / TV", str: 4, agi: 7, int: 10, com: 7, cha: 5 },
+                { name: "Din Djarin (Mando)", district: "District 2", origin: "Movie / TV", str: 8, agi: 7, int: 7, com: 9, cha: 6 },
+                { name: "Furiosa", district: "District 6", origin: "Movie / TV", str: 8, agi: 8, int: 8, com: 9, cha: 6 },
+                { name: "Walter White", district: "District 3", origin: "Movie / TV", str: 4, agi: 4, int: 10, com: 5, cha: 6 },
+                { name: "Arya Stark", district: "District 7", origin: "Movie / TV", str: 5, agi: 10, int: 8, com: 9, cha: 6 },
+                { name: "Legolas", district: "District 7", origin: "Book / Myth", str: 7, agi: 10, int: 8, com: 10, cha: 8 },
+                { name: "Buffy Summers", district: "District 1", origin: "Movie / TV", str: 9, agi: 9, int: 6, com: 9, cha: 8 }
+            ],
+            videoGames: [
+                { name: "Geralt of Rivia", district: "District 2", origin: "Video Game", str: 9, agi: 8, int: 9, com: 10, cha: 6 },
+                { name: "Kratos", district: "District 1", origin: "Video Game", str: 10, agi: 7, int: 7, com: 10, cha: 4 },
+                { name: "Solid Snake", district: "District 13", origin: "Video Game", str: 8, agi: 9, int: 9, com: 9, cha: 6 },
+                { name: "Link", district: "District 7", origin: "Video Game", str: 7, agi: 9, int: 8, com: 9, cha: 8 },
+                { name: "Master Chief", district: "District 2", origin: "Video Game", str: 10, agi: 8, int: 8, com: 10, cha: 7 },
+                { name: "Ellie Williams", district: "District 12", origin: "Video Game", str: 5, agi: 9, int: 8, com: 8, cha: 6 },
+                { name: "Lara Croft", district: "District 7", origin: "Video Game", str: 6, agi: 9, int: 9, com: 8, cha: 8 },
+                { name: "Aloy", district: "District 11", origin: "Video Game", str: 6, agi: 9, int: 10, com: 9, cha: 7 },
+                { name: "Arthur Morgan", district: "District 10", origin: "Video Game", str: 8, agi: 6, int: 7, com: 9, cha: 8 },
+                { name: "Doom Slayer", district: "District 5", origin: "Video Game", str: 10, agi: 8, int: 6, com: 10, cha: 3 },
+                { name: "2B", district: "District 3", origin: "Video Game", str: 9, agi: 10, int: 8, com: 10, cha: 6 },
+                { name: "Ezio Auditore", district: "District 1", origin: "Video Game", str: 7, agi: 10, int: 8, com: 9, cha: 9 }
+            ]
+        };
+
+        // =====================================================================
+        // 2. APPLICATION STATE & SNAPSHOT HISTORY STACK
+        // =====================================================================
+        let state = {
+            roster: [],
+            tributes: [],
+            relationships: {},
+            day: 1,
+            phaseType: "Bloodbath", // Bloodbath, Day, Fallen, Night, Feast, Hazard
+            logs: [],
+            logFilter: "all",
+            chaos: 0.35,
+            lethalityMode: "standard", // standard (~50% bloodbath), brutal (~65%), slow (~25%)
+            feastTriggered: false,
+            autoTimer: null,
+            gameOver: false,
+            recentDeaths: [],
+            fallenMarkers: [], // { x, y, name, district, phase }
+            activeHazardZone: null, // zoneKey or null
+            selectedMapTributeId: null,
+            editingLogId: null
+        };
+
+        let historyStack = []; // Deep snapshots for Rewind / Undo
+
+        function saveSnapshot() {
+            const snap = JSON.parse(JSON.stringify({
+                tributes: state.tributes,
+                relationships: state.relationships,
+                day: state.day,
+                phaseType: state.phaseType,
+                logs: state.logs,
+                gameOver: state.gameOver,
+                recentDeaths: state.recentDeaths,
+                fallenMarkers: state.fallenMarkers,
+                activeHazardZone: state.activeHazardZone
+            }));
+            historyStack.push(snap);
+            if (historyStack.length > 25) historyStack.shift();
+            updateRewindBtn();
+        }
+
+        function rewindPhase() {
+            if (historyStack.length === 0) return;
+            stopAutoPlay();
+            const snap = historyStack.pop();
+            Object.assign(state, snap);
+            updateRewindBtn();
+
+            const btnProc = document.getElementById("btnProceed");
+            btnProc.disabled = state.gameOver;
+            btnProc.innerHTML = state.gameOver ? "VICTOR CROWNED" : "PROCEED &#9654;";
+
+            refreshAllArenaUI();
+            toast("Rewound to previous arena phase!");
+        }
+
+        function updateRewindBtn() {
+            const btn = document.getElementById("btnRewind");
+            document.getElementById("rewindCount").textContent = historyStack.length;
+            btn.disabled = historyStack.length === 0;
+        }
+
+        // =====================================================================
+        // 3. SETUP LOBBY & PRESET HANDLERS
+        // =====================================================================
+        function toast(msg) {
+            const c = document.getElementById("toastContainer");
+            const el = document.createElement("div");
+            el.className = "toast";
+            el.textContent = msg;
+            c.appendChild(el);
+            setTimeout(() => { el.style.opacity = "0"; setTimeout(() => el.remove(), 250); }, 2800);
+        }
+
+        function syncFormStats() {
+            const ids = ["Str", "Agi", "Int", "Com", "Cha"];
+            let sum = 0;
+            ids.forEach(k => {
+                const v = parseInt(document.getElementById("s" + k).value);
+                document.getElementById("v" + k).textContent = v;
+                sum += v;
+            });
+            document.getElementById("lblTotalPts").textContent = `${sum}/50`;
+        }
+
+        function updateChaos() {
+            const v = parseInt(document.getElementById("sChaos").value);
+            state.chaos = v / 100;
+            const tag = v <= 20 ? "Deterministic" : (v >= 55 ? "High Chaos" : "Balanced");
+            document.getElementById("lblChaos").textContent = `${v}% (${tag})`;
+        }
+
+        function updateLethality() {
+            const mode = document.getElementById("sLethality").value;
+            state.lethalityMode = mode;
+            const labels = {
+                standard: "Movie Canon (~50% Bloodbath)",
+                brutal: "Brutal Massacre (~65% Bloodbath)",
+                slow: "Slow Burn (~25% Bloodbath)"
+            };
+            document.getElementById("lblLethality").textContent = labels[mode] || labels.standard;
+            const liveSel = document.getElementById("liveLethalitySel");
+            if (liveSel) liveSel.value = mode;
+        }
+
+        function setLiveLethality(mode) {
+            state.lethalityMode = mode;
+            const setupSel = document.getElementById("sLethality");
+            if (setupSel) setupSel.value = mode;
+            updateLethality();
+            toast(`Arena lethality set to ${mode.toUpperCase()}`);
+        }
+
+        function randomizeForm() {
+            ["Str", "Agi", "Int", "Com", "Cha"].forEach(k => {
+                document.getElementById("s" + k).value = Math.floor(Math.random() * 8) + 2;
+            });
+            syncFormStats();
+        }
+
+        function handleEnlist(e) {
+            e.preventDefault();
+            if (state.roster.length >= 48) return toast("Max 48 tributes allowed in the arena.");
+            const name = document.getElementById("inpName").value.trim();
+            if (!name) return;
+
+            state.roster.push({
+                id: "t_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+                name,
+                district: document.getElementById("inpDistrict").value,
+                origin: document.getElementById("inpOrigin").value,
+                str: parseInt(document.getElementById("sStr").value),
+                agi: parseInt(document.getElementById("sAgi").value),
+                int: parseInt(document.getElementById("sInt").value),
+                com: parseInt(document.getElementById("sCom").value),
+                cha: parseInt(document.getElementById("sCha").value)
+            });
+            document.getElementById("inpName").value = "";
+            randomizeForm();
+            renderSetupRoster();
+            toast(`Enlisted ${name}!`);
+        }
+
+        function loadPreset(key) {
+            let pool = [];
+            if (key === "allStarChaos") {
+                pool = [
+                    ...PRESETS.panem.slice(0, 5),
+                    ...PRESETS.historical.slice(0, 5),
+                    ...PRESETS.memes.slice(0, 5),
+                    ...PRESETS.popCulture.slice(0, 5),
+                    ...PRESETS.videoGames.slice(0, 4)
+                ];
+            } else {
+                pool = PRESETS[key] || [];
+            }
+            state.roster = pool.map((t, idx) => ({ ...t, id: `pre_${key}_${idx}_${Date.now()}` }));
+            renderSetupRoster();
+            toast(`Loaded ${state.roster.length} tributes!`);
+        }
+
+        function autoFillRoster(target = 24) {
+            const allPool = [
+                ...PRESETS.panem, ...PRESETS.historical, ...PRESETS.memes,
+                ...PRESETS.popCulture, ...PRESETS.videoGames
+            ];
+            for (const cand of allPool) {
+                if (state.roster.length >= target) break;
+                if (!state.roster.some(r => r.name === cand.name)) {
+                    state.roster.push({ ...cand, id: "fill_" + Math.random().toString(36).slice(2, 8) });
+                }
+            }
+            renderSetupRoster();
+            toast(`Roster filled to ${state.roster.length} tributes.`);
+        }
+
+        function clearRoster() {
+            state.roster = [];
+            renderSetupRoster();
+        }
+
+        function removeRosterItem(id) {
+            state.roster = state.roster.filter(t => t.id !== id);
+            renderSetupRoster();
+        }
+
+        function exportRosterJSON() {
+            if (!state.roster.length) return toast("Roster is empty.");
+            const blob = new Blob([JSON.stringify(state.roster, null, 2)], { type: "application/json" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "panem_tributes.json";
+            a.click();
+        }
+
+        function importRosterJSON(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if (!Array.isArray(data)) throw new Error();
+                    state.roster = data.slice(0, 48).map((t, i) => ({
+                        id: t.id || `imp_${i}_${Date.now()}`,
+                        name: String(t.name || `Tribute ${i+1}`),
+                        district: String(t.district || "District 12"),
+                        origin: String(t.origin || "Custom"),
+                        str: Math.min(10, Math.max(1, parseInt(t.str) || 5)),
+                        agi: Math.min(10, Math.max(1, parseInt(t.agi) || 5)),
+                        int: Math.min(10, Math.max(1, parseInt(t.int) || 5)),
+                        com: Math.min(10, Math.max(1, parseInt(t.com) || 5)),
+                        cha: Math.min(10, Math.max(1, parseInt(t.cha) || 5))
+                    }));
+                    renderSetupRoster();
+                    toast(`Imported ${state.roster.length} tributes!`);
+                } catch {
+                    toast("Invalid JSON file.");
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = "";
+        }
+
+        function renderSetupRoster() {
+            const grid = document.getElementById("setupRosterGrid");
+            document.getElementById("lblRosterCount").textContent = state.roster.length;
+
+            if (!state.roster.length) {
+                grid.innerHTML = `<div class="text-muted text-sm" style="grid-column: 1/-1; text-align: center; padding: 3rem; border: 1px dashed var(--border-subtle); border-radius: 10px;">No tributes enlisted. Load a preset above or enlist custom tributes on the left.</div>`;
+                return;
+            }
+
+            grid.innerHTML = state.roster.map(t => {
+                const ovr = Math.round(((t.str + t.agi + t.int + t.com + t.cha) / 50) * 100);
+                return `
+                    <div class="tribute-setup-card">
+                        <div class="flex justify-between items-start gap-2">
+                            <div style="min-width:0;">
+                                <div class="font-bold text-sm truncate" title="${t.name}">${t.name}</div>
+                                <div class="flex items-center gap-1" style="margin-top: 3px;">
+                                    <span class="badge badge-gold">${t.district}</span>
+                                    <span class="badge">${t.origin}</span>
+                                </div>
+                            </div>
+                            <button onclick="removeRosterItem('${t.id}')" class="btn btn-xs btn-crimson" title="Remove">&#10005;</button>
+                        </div>
+                        <div class="stat-mini-grid">
+                            <div class="stat-mini-box"><span class="text-dim block">STR</span><strong>${t.str}</strong></div>
+                            <div class="stat-mini-box"><span class="text-dim block">AGI</span><strong>${t.agi}</strong></div>
+                            <div class="stat-mini-box"><span class="text-dim block">IQ</span><strong>${t.int}</strong></div>
+                            <div class="stat-mini-box"><span class="text-dim block">CMB</span><strong>${t.com}</strong></div>
+                            <div class="stat-mini-box"><span class="text-dim block">CHA</span><strong>${t.cha}</strong></div>
+                        </div>
+                        <div class="flex justify-between font-mono text-xs text-muted" style="margin-top: 6px;">
+                            <span>TRAINING RATING</span>
+                            <strong class="text-gold">${ovr} OVR</strong>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        // =====================================================================
+        // 4. SIMULATION CORE: RELATIONSHIPS, COORDINATES & COMBAT
+        // =====================================================================
+        function relKey(a, b) { return a < b ? `${a}__${b}` : `${b}__${a}`; }
+        function getRel(a, b) { return a === b ? 100 : (state.relationships[relKey(a, b)] || 0); }
+        function modRel(a, b, delta) {
+            if (a === b) return;
+            const k = relKey(a, b);
+            state.relationships[k] = Math.max(-100, Math.min(100, (state.relationships[k] || 0) + delta));
+        }
+
+        function assignZoneCoords(tribute, zoneKey) {
+            const z = ARENA_ZONES[zoneKey] || ARENA_ZONES.woods;
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * (z.r * 0.78);
+            tribute.zone = zoneKey;
+            tribute.x = Math.round(z.cx + Math.cos(angle) * dist);
+            tribute.y = Math.round(z.cy + Math.sin(angle) * dist);
+        }
+
+        function launchHungerGames() {
+            if (state.roster.length < 2) return toast("Enlist at least 2 tributes first!");
+
+            historyStack = [];
+            state.tributes = state.roster.map((t, idx) => {
+                const angle = (idx / state.roster.length) * Math.PI * 2;
+                return {
+                    ...t,
+                    alive: true,
+                    hp: 100,
+                    hunger: 100,
+                    sanity: 100,
+                    infected: false,
+                    kills: 0,
+                    killedBy: null,
+                    deathReason: null,
+                    deathPhase: null,
+                    zone: "cornucopia",
+                    x: Math.round(250 + Math.cos(angle) * 62),
+                    y: Math.round(250 + Math.sin(angle) * 62),
+                    inventory: [],
+                    timeline: [`Stepped onto the launch plate in ${t.district} colors.`]
+                };
+            });
+
+            state.relationships = {};
+            const careers = ["District 1", "District 2", "District 4"];
+            for (let i = 0; i < state.tributes.length; i++) {
+                for (let j = i + 1; j < state.tributes.length; j++) {
+                    const a = state.tributes[i], b = state.tributes[j];
+                    let base = Math.floor(Math.random() * 17) - 8;
+                    if (a.district === b.district && a.district !== "The Capitol") base += 45;
+                    if (careers.includes(a.district) && careers.includes(b.district)) base += 25;
+                    if (a.origin === b.origin && a.origin !== "Friend / IRL") base += 10;
+                    state.relationships[relKey(a.id, b.id)] = Math.max(-100, Math.min(100, base));
+                }
+            }
+
+            state.day = 1;
+            state.phaseType = "Bloodbath";
+            state.logs = [];
+            state.feastTriggered = false;
+            state.gameOver = false;
+            state.recentDeaths = [];
+            state.fallenMarkers = [];
+            state.activeHazardZone = null;
+            state.selectedMapTributeId = state.tributes[0].id;
+
+            const liveSel = document.getElementById("liveLethalitySel");
+            if (liveSel) liveSel.value = state.lethalityMode;
+
+            document.getElementById("setupView").classList.add("hidden");
+            document.getElementById("arenaView").classList.remove("hidden");
+            document.getElementById("hdrStatusBar").classList.remove("hidden");
+            document.getElementById("btnFallenSky").classList.remove("hidden");
+            document.getElementById("btnNewRoster").classList.remove("hidden");
+
+            const btnProc = document.getElementById("btnProceed");
+            btnProc.disabled = false;
+            btnProc.innerHTML = "PROCEED &#9654;";
+
+            runPhaseEngine();
+        }
+
+        function returnToSetup() {
+            stopAutoPlay();
+            document.getElementById("arenaView").classList.add("hidden");
+            document.getElementById("setupView").classList.remove("hidden");
+            document.getElementById("hdrStatusBar").classList.add("hidden");
+            document.getElementById("btnFallenSky").classList.add("hidden");
+            document.getElementById("btnNewRoster").classList.add("hidden");
+        }
+
+        function getPhaseTitle() {
+            if (state.phaseType === "Bloodbath") return "The Cornucopia Bloodbath";
+            if (state.phaseType === "Fallen") return `Night ${state.day} — Fallen Tributes`;
+            if (state.phaseType === "Feast") return `Day ${state.day} — The Cornucopia Feast`;
+            if (state.phaseType === "Hazard") return `Day ${state.day} — Gamemaker Arena Event`;
+            return `${state.phaseType} ${state.day}`;
+        }
+
+        function grantItem(tribute, template, how, phase) {
+            const inst = {
+                ...template,
+                uid: "it_" + Math.random().toString(36).slice(2, 9),
+                how,
+                phase
+            };
+            tribute.inventory.push(inst);
+            return inst;
+        }
+
+        function getBestWeapon(t) {
+            const w = t.inventory.filter(i => i.type === "weapon").sort((a, b) => b.power - a.power);
+            return w[0] || null;
+        }
+
+        function getArmorMitigation(t) {
+            return t.inventory.filter(i => i.type === "armor").reduce((s, i) => s + (i.defense || 0), 0);
+        }
+
+        function tLink(t) {
+            return `<button class="tribute-link" onclick="openDossier('${t.id}')">${t.name}</button>`;
+        }
+
+        function pushEvent(category, html, meta = {}) {
+            const id = "ev_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
+            state.logs.push({
+                id,
+                phase: getPhaseTitle(),
+                category,
+                html,
+                subjectId: meta.subjectId || null,
+                targetId: meta.targetId || null,
+                type: meta.type || "flavor"
+            });
+            const clean = html.replace(/<[^>]*>?/gm, "");
+            [meta.subjectId, meta.targetId].filter(Boolean).forEach(tid => {
+                const tr = state.tributes.find(x => x.id === tid);
+                if (tr) tr.timeline.push(`[${getPhaseTitle()}] ${clean}`);
+            });
+        }
+
+        function eliminateTribute(victim, killer, reason, phase) {
+            victim.alive = false;
+            victim.hp = 0;
+            victim.deathReason = reason;
+            victim.deathPhase = phase;
+            state.recentDeaths.push(victim);
+            state.fallenMarkers.push({ x: victim.x, y: victim.y, name: victim.name, district: victim.district, phase });
+
+            if (killer) {
+                victim.killedBy = killer.name;
+                killer.kills += 1;
+            }
+
+            state.tributes.forEach(other => {
+                if (other.alive && other.id !== victim.id) {
+                    const rel = getRel(other.id, victim.id);
+                    if (rel >= 35) {
+                        other.sanity = Math.max(10, other.sanity - 28);
+                        if (killer && other.id !== killer.id) modRel(other.id, killer.id, -75);
+                    }
+                }
+            });
+        }
+
+        function combatRating(t) {
+            const wep = getBestWeapon(t);
+            const wPow = wep ? wep.power * 2.3 : 0;
+            const hpMod = 0.6 + (t.hp / 100) * 0.4;
+            const hunMod = 0.75 + (t.hunger / 100) * 0.25;
+            const sanMod = 0.8 + (t.sanity / 100) * 0.2;
+            const base = (t.str * 1.4) + (t.com * 1.8) + (t.agi * 1.1) + (t.int * 0.6) + wPow;
+            const swing = 36 * (state.chaos * 2.2);
+            const luck = (Math.random() * swing) - (swing * 0.35);
+            return (base * hpMod * hunMod * sanMod) + luck;
+        }
+
+        function resolveSkirmish(atk, def, phase, ambush = false) {
+            const aWep = getBestWeapon(atk);
+            const dWep = getBestWeapon(def);
+            let aScore = combatRating(atk) + (ambush ? 12 : 0);
+            let dScore = combatRating(def);
+
+            const ally = state.tributes.find(o => o.alive && o.id !== atk.id && o.id !== def.id && o.zone === def.zone && getRel(o.id, def.id) >= 45);
+            if (ally && Math.random() < 0.5) {
+                dScore += combatRating(ally) * 0.65;
+                modRel(ally.id, def.id, 15);
+                modRel(ally.id, atk.id, -40);
+                if (dScore > aScore) {
+                    const dmg = Math.floor(Math.random() * 22) + 14;
+                    atk.hp = Math.max(10, atk.hp - dmg);
+                    pushEvent("alliance", `&#128737; ${tLink(ally)} leaps to defend ally ${tLink(def)} in ${ARENA_ZONES[def.zone].name}, driving ${tLink(atk)} back with ${dmg} damage!`, { subjectId: ally.id, targetId: atk.id });
+                    return;
+                }
+            }
+
+            const winner = aScore >= dScore ? atk : def;
+            const loser = aScore >= dScore ? def : atk;
+            const wWep = winner === atk ? aWep : dWep;
+
+            if (getRel(winner.id, loser.id) >= 20 && Math.random() < 0.6) {
+                modRel(winner.id, loser.id, 12);
+                pushEvent("alliance", `&#129309; ${tLink(winner)} corners ${tLink(loser)}, recognizes a past kindness, and lowers their weapon to spare them.`, { subjectId: winner.id, targetId: loser.id });
+                return;
+            }
+
+            const lethalityEscapePenalty = state.lethalityMode === "brutal" ? 0.35 : (state.lethalityMode === "standard" ? 0.55 : 0.9);
+            const rawEscape = ((loser.agi * 0.024) + (Math.abs(aScore - dScore) < 5 ? 0.14 : 0.04)) * lethalityEscapePenalty;
+            const escapeProb = Math.min(0.32, rawEscape);
+
+            if (Math.random() < escapeProb && loser.hp > 38) {
+                const arm = getArmorMitigation(loser);
+                const dmg = Math.max(16, Math.round((Math.floor(Math.random() * 34) + 28) * (1 - arm / 100)));
+                loser.hp = Math.max(4, loser.hp - dmg);
+                if (Math.random() < 0.5) loser.infected = true;
+                modRel(winner.id, loser.id, -45);
+                pushEvent("combat", `&#9876; ${tLink(winner)} clashes violently with ${tLink(loser)}${wWep ? ` using a <span class="text-gold">${wWep.name}</span>` : ""}, inflicting a severe ${dmg} damage wound before ${tLink(loser)} barely escapes into ${ARENA_ZONES[loser.zone].name}!`, { subjectId: winner.id, targetId: loser.id, type: "duel" });
+            } else {
+                const looted = [];
+                if (loser.inventory.length > 0) {
+                    const sorted = [...loser.inventory].sort((x, y) => (y.power || y.heal || y.defense || 10) - (x.power || x.heal || x.defense || 10));
+                    sorted.slice(0, 2).forEach(it => {
+                        winner.inventory.push({ ...it, how: `Looted from fallen ${loser.name}`, phase });
+                        looted.push(it.name);
+                    });
+                    loser.inventory = [];
+                }
+
+                const upset = (winner.str + winner.com + (wWep ? wWep.power : 0)) + 5 < (loser.str + loser.com);
+                const lootTxt = looted.length ? ` <span class="text-gold text-xs">[Looted: ${looted.join(", ")}]</span>` : "";
+                const desc = upset
+                    ? `&#9889; <strong>SHOCKING UPSET!</strong> Underdog ${tLink(winner)} outmaneuvers ${tLink(loser)} and delivers a fatal strike${wWep ? ` with their <span class="text-gold">${wWep.name}</span>` : ""}!${lootTxt}`
+                    : (wWep
+                        ? `&#128128; ${tLink(winner)} ${wWep.verb} ${tLink(loser)} with a <span class="text-gold">${wWep.name}</span>, eliminating them from the Games!${lootTxt}`
+                        : `&#128128; ${tLink(winner)} overpowers ${tLink(loser)} in brutal hand-to-hand combat!${lootTxt}`);
+
+                eliminateTribute(loser, winner, `Killed by ${winner.name}${wWep ? ` (${wWep.name})` : ""}`, phase);
+                pushEvent("combat", desc, { subjectId: winner.id, targetId: loser.id, type: "kill" });
+            }
+        }
+
+        // =====================================================================
+        // 5. PHASE SIMULATION ENGINE
+        // =====================================================================
+        function advancePhase() {
+            if (state.gameOver) return;
+            saveSnapshot();
+
+            if (state.phaseType === "Bloodbath") {
+                state.phaseType = "Day";
+            } else if (["Day", "Feast", "Hazard"].includes(state.phaseType)) {
+                state.phaseType = "Fallen";
+            } else if (state.phaseType === "Fallen") {
+                state.phaseType = "Night";
+            } else if (state.phaseType === "Night") {
+                state.day += 1;
+                const aliveCount = state.tributes.filter(t => t.alive).length;
+                if (!state.feastTriggered && aliveCount >= 4 && aliveCount <= 6 && state.day >= 2) {
+                    state.feastTriggered = true;
+                    state.phaseType = "Feast";
+                } else if (state.day >= 3 && aliveCount >= 3 && Math.random() < 0.6) {
+                    state.phaseType = "Hazard";
+                } else {
+                    state.phaseType = "Day";
+                }
+            }
+            runPhaseEngine();
+        }
+
+        function runPhaseEngine() {
+            const phase = getPhaseTitle();
+            state.logs = [];
+            state.activeHazardZone = null;
+
+            const alive = state.tributes.filter(t => t.alive);
+            if (alive.length <= 1) {
+                concludeGames(alive[0]);
+                return;
+            }
+
+            if (state.phaseType === "Bloodbath") simulateBloodbath(alive, phase);
+            else if (state.phaseType === "Fallen") simulateFallenSky(phase);
+            else if (state.phaseType === "Feast") simulateFeast(alive, phase);
+            else if (state.phaseType === "Hazard") simulateGamemakerHazard(alive, phase);
+            else simulateCycle(alive, phase, state.phaseType === "Night");
+
+            const rem = state.tributes.filter(t => t.alive);
+            if (rem.length <= 1) concludeGames(rem[0]);
+
+            refreshAllArenaUI();
+        }
+
+        function simulateBloodbath(alive, phase) {
+            pushEvent("system", `&#127930; <strong>THE 60-SECOND COUNTDOWN ENDS!</strong> The gong detonates across the arena. Golden weapons, backpacks, and medicine gleam at the Cornucopia mouth as tributes sprint off their metal plates!`);
+            const zoneKeys = ["woods", "lake", "ridge", "ruins"];
+            const rushers = [];
+
+            const rushThreshold = state.lethalityMode === "brutal" ? 10 : (state.lethalityMode === "standard" ? 12.5 : 16.5);
+
+            [...alive].sort(() => Math.random() - 0.5).forEach(t => {
+                const rush = (t.str + t.com + t.agi) + (Math.random() * 14) - (t.int * 0.3);
+                if (rush >= rushThreshold) {
+                    assignZoneCoords(t, "cornucopia");
+                    rushers.push(t);
+                } else {
+                    const dest = zoneKeys[Math.floor(Math.random() * zoneKeys.length)];
+                    assignZoneCoords(t, dest);
+                    if (Math.random() < 0.32) {
+                        const sup = ITEM_DB.supplies[Math.floor(Math.random() * ITEM_DB.supplies.length)];
+                        grantItem(t, sup, "Snagged from outer Cornucopia edge while fleeing", phase);
+                        pushEvent("loot", `&#127939; ${tLink(t)} bolts toward ${ARENA_ZONES[dest].name}, snatching a <span class="text-cyan">${sup.name}</span> off the outer edge.`, { subjectId: t.id });
+                    } else {
+                        pushEvent("survival", `&#127794; Heeding their mentor's advice, ${tLink(t)} sprints away from the Cornucopia into ${ARENA_ZONES[dest].name}.`, { subjectId: t.id });
+                    }
+                }
+            });
+
+            rushers.forEach(t => {
+                if (Math.random() < 0.68) {
+                    const w = ITEM_DB.weapons[Math.floor(Math.random() * ITEM_DB.weapons.length)];
+                    grantItem(t, w, "Seized inside the Cornucopia during the opening Bloodbath", phase);
+                    pushEvent("loot", `&#128481; ${tLink(t)} reaches the Cornucopia pile first and claims a <span class="text-gold">${w.name}</span>!`, { subjectId: t.id });
+                } else {
+                    const pool = [...ITEM_DB.armor, ...ITEM_DB.medical, ...ITEM_DB.supplies];
+                    const it = pool[Math.floor(Math.random() * pool.length)];
+                    grantItem(t, it, "Grabbed from Cornucopia supply crates", phase);
+                    pushEvent("loot", `&#127890; ${tLink(t)} dives for an orange survival backpack and secures a <span class="text-cyan">${it.name}</span>.`, { subjectId: t.id });
+                }
+            });
+
+            const targetMortalityRatio = state.lethalityMode === "brutal" ? 0.65 : (state.lethalityMode === "standard" ? 0.50 : 0.25);
+            const targetDeaths = Math.max(1, Math.round(alive.length * targetMortalityRatio));
+            let deathsSoFar = 0;
+
+            const shuffledRushers = [...rushers].sort(() => Math.random() - 0.5);
+            for (let i = 0; i < shuffledRushers.length - 1; i += 2) {
+                if (deathsSoFar >= targetDeaths) break;
+                const a = shuffledRushers[i];
+                const b = shuffledRushers[i + 1];
+                if (!a.alive || !b.alive) continue;
+                if (getRel(a.id, b.id) >= 40) continue;
+
+                const aScore = combatRating(a);
+                const bScore = combatRating(b);
+                const winner = aScore >= bScore ? a : b;
+                const loser = aScore >= bScore ? b : a;
+                const wWep = getBestWeapon(winner);
+
+                if (loser.inventory.length > 0) {
+                    const looted = loser.inventory.shift();
+                    winner.inventory.push({ ...looted, how: `Ripped from ${loser.name} in the Bloodbath`, phase });
+                }
+
+                const bloodbathKills = wWep
+                    ? [
+                        `&#128128; <strong>CORNUCOPIA BLOODBATH:</strong> ${tLink(winner)} ${wWep.verb} ${tLink(loser)} with a <span class="text-gold">${wWep.name}</span> during a frantic tug-of-war over supplies!`,
+                        `&#128128; ${tLink(winner)} catches ${tLink(loser)} lunging for a backpack and strikes them down with a <span class="text-gold">${wWep.name}</span>!`
+                      ]
+                    : [
+                        `&#128128; ${tLink(winner)} slams ${tLink(loser)} against the metal horn of the Cornucopia in brutal close-quarters combat!`,
+                        `&#128128; Caught unarmed in the melee, ${tLink(loser)} is overpowered and eliminated by ${tLink(winner)}!`
+                      ];
+
+                eliminateTribute(loser, winner, `Killed in the Cornucopia Bloodbath by ${winner.name}${wWep ? ` (${wWep.name})` : ""}`, phase);
+                pushEvent("combat", bloodbathKills[Math.floor(Math.random() * bloodbathKills.length)], { subjectId: winner.id, targetId: loser.id, type: "kill" });
+                deathsSoFar++;
+            }
+
+            const armedSurvivors = rushers.filter(r => r.alive).sort((a, b) => combatRating(b) - combatRating(a));
+            let safetyLoop = 0;
+            while (deathsSoFar < targetDeaths && armedSurvivors.length > 0 && safetyLoop < 30) {
+                safetyLoop++;
+                const killer = armedSurvivors[safetyLoop % armedSurvivors.length];
+                const candidates = state.tributes.filter(t => t.alive && t.id !== killer.id && getRel(killer.id, t.id) < 35);
+                if (candidates.length <= 1) break;
+
+                candidates.sort((a, b) => (a.com + a.agi + Math.random() * 8) - (b.com + b.agi + Math.random() * 8));
+                const victim = candidates[0];
+                const kWep = getBestWeapon(killer);
+
+                const sweepDesc = kWep
+                    ? `&#127993; <strong>OPENING VOLLEY:</strong> As ${tLink(victim)} tries to sprint clear of the clearing, ${tLink(killer)} ${kWep.verb} them from behind with a <span class="text-gold">${kWep.name}</span>!`
+                    : `&#128128; <strong>CARRION RUSH:</strong> ${tLink(killer)} tackles ${tLink(victim)} at the edge of the Cornucopia clearing, ending their Games in seconds!`;
+
+                eliminateTribute(victim, killer, `Eliminated in the opening Bloodbath by ${killer.name}`, phase);
+                pushEvent("combat", sweepDesc, { subjectId: killer.id, targetId: victim.id, type: "kill" });
+                deathsSoFar++;
+            }
+
+            const totalFallenNow = state.tributes.filter(t => !t.alive).length;
+            pushEvent("system", `&#128163; <strong>THE BLOODBATH SUBSIDES:</strong> ${totalFallenNow} of ${alive.length} tributes lie dead around the Cornucopia as the survivors scatter into the wilderness.`);
+
+            rushers.filter(r => r.alive).forEach(r => {
+                if (Math.random() < 0.78) {
+                    assignZoneCoords(r, zoneKeys[Math.floor(Math.random() * zoneKeys.length)]);
+                }
+            });
+        }
+
+        function simulateCycle(alive, phase, isNight) {
+            const zoneKeys = ["cornucopia", "woods", "lake", "ridge", "ruins"];
+            const acted = new Set();
+
+            const herdPressure = Math.min(0.92, 0.68 + (state.day * 0.06) + (state.lethalityMode === "brutal" ? 0.12 : 0));
+            if (state.day >= 2 && alive.length > 3 && Math.random() < 0.55) {
+                const focalZone = zoneKeys[Math.floor(Math.random() * zoneKeys.length)];
+                alive.forEach(t => {
+                    if (Math.random() < 0.55) assignZoneCoords(t, focalZone);
+                });
+                pushEvent("gamemaker", `&#128225; <strong>GAMEMAKER HERD PROTOCOL:</strong> Subtle heat vents and perimeter forcefields drive scattered tributes toward <span class="text-gold">${ARENA_ZONES[focalZone].name}</span> to force confrontation!`);
+            }
+
+            alive.forEach(t => {
+                t.hunger = Math.max(0, t.hunger - (isNight ? 14 : 22));
+                if (t.infected) {
+                    const infDmg = 22;
+                    if (t.hp <= infDmg) {
+                        eliminateTribute(t, null, "Succumbed to severe blood poisoning and wound infection", phase);
+                        pushEvent("combat", `&#129440; <strong>FATAL INFECTION:</strong> Without Capitol antibiotics, ${tLink(t)} collapses from untreated sepsis in ${ARENA_ZONES[t.zone].name}!`, { subjectId: t.id, type: "kill" });
+                        acted.add(t.id);
+                        return;
+                    } else {
+                        t.hp -= infDmg;
+                        pushEvent("survival", `&#129440; ${tLink(t)} suffers from raging sepsis (-${infDmg} HP) and desperately needs Capitol medicine.`, { subjectId: t.id });
+                    }
+                }
+
+                if (t.hp <= 68 || t.infected) {
+                    const idx = t.inventory.findIndex(i => i.type === "medical");
+                    if (idx !== -1) {
+                        const med = t.inventory.splice(idx, 1)[0];
+                        t.hp = Math.min(100, t.hp + med.heal);
+                        t.infected = false;
+                        pushEvent("loot", `&#129657; ${tLink(t)} applies their <span class="text-emerald">${med.name}</span> (${med.how}), healing +${med.heal} HP and curing infection.`, { subjectId: t.id });
+                        acted.add(t.id);
+                    }
+                }
+
+                if (t.hunger <= 50) {
+                    const idx = t.inventory.findIndex(i => i.type === "supply");
+                    if (idx !== -1) {
+                        const sup = t.inventory.splice(idx, 1)[0];
+                        t.hunger = Math.min(100, t.hunger + sup.hunger);
+                        pushEvent("loot", `&#127830; ${tLink(t)} consumes their <span class="text-cyan">${sup.name}</span>, restoring +${sup.hunger} Hydration & Nourishment.`, { subjectId: t.id });
+                    }
+                }
+
+                if (Math.random() < 0.55) {
+                    const nextZ = t.hunger < 45 ? "lake" : zoneKeys[Math.floor(Math.random() * zoneKeys.length)];
+                    assignZoneCoords(t, nextZ);
+                }
+            });
+
+            const pool = [...alive].filter(t => t.alive).sort(() => Math.random() - 0.5);
+            for (const actor of pool) {
+                if (!actor.alive || acted.has(actor.id)) continue;
+
+                const sponsorChance = (actor.cha * 0.02) + (actor.kills * 0.022) + (actor.hp < 50 ? 0.05 : 0);
+                if (Math.random() < sponsorChance) {
+                    acted.add(actor.id);
+                    const giftPool = (actor.hp < 65 || actor.infected) ? ITEM_DB.medical : (!getBestWeapon(actor) ? ITEM_DB.weapons : [...ITEM_DB.supplies, ...ITEM_DB.medical, ...ITEM_DB.armor]);
+                    const gift = giftPool[Math.floor(Math.random() * giftPool.length)];
+                    grantItem(actor, gift, "Delivered by Silver Capitol Sponsor Parachute", phase);
+                    pushEvent("loot", `&#129666; <strong>SPONSOR PARACHUTE!</strong> A silver parachute drifts into ${ARENA_ZONES[actor.zone].name} for ${tLink(actor)}, delivering a <span class="text-gold">${gift.name}</span>!`, { subjectId: actor.id });
+                    continue;
+                }
+
+                const rivals = pool.filter(o => o.alive && o.id !== actor.id && !acted.has(o.id));
+                if (rivals.length > 0 && Math.random() < herdPressure) {
+                    rivals.sort((a, b) => (a.zone === actor.zone ? -1 : 1));
+                    const target = rivals[0];
+                    target.zone = actor.zone;
+                    target.x = Math.min(460, Math.max(40, actor.x + (Math.random() * 24 - 12)));
+                    target.y = Math.min(460, Math.max(40, actor.y + (Math.random() * 24 - 12)));
+
+                    const rel = getRel(actor.id, target.id);
+                    acted.add(actor.id);
+                    acted.add(target.id);
+
+                    const endgameDesperation = alive.length <= 3 ? -60 : 0;
+
+                    if ((rel + endgameDesperation) <= -10 || (rel < 25 && Math.random() < 0.72)) {
+                        if (isNight && actor.agi >= 8 && target.inventory.length > 0 && Math.random() < 0.28) {
+                            const stolen = target.inventory.pop();
+                            stolen.how = `Stolen from ${target.name} while sleeping`;
+                            stolen.phase = phase;
+                            actor.inventory.push(stolen);
+                            modRel(target.id, actor.id, -55);
+                            pushEvent("loot", `&#129399; Under cover of darkness in ${ARENA_ZONES[actor.zone].name}, ${tLink(actor)} silently steals ${tLink(target)}'s <span class="text-gold">${stolen.name}</span>!`, { subjectId: actor.id, targetId: target.id });
+                        } else {
+                            resolveSkirmish(actor, target, phase, isNight && actor.agi >= 7);
+                        }
+                    } else if (rel >= 20) {
+                        if (rel < 65 && Math.random() < (0.12 * state.chaos * 2)) {
+                            modRel(actor.id, target.id, -95);
+                            pushEvent("alliance", `&#128481; <strong>BETRAYAL!</strong> ${tLink(actor)} turns on ally ${tLink(target)} in ${ARENA_ZONES[actor.zone].name}!`, { subjectId: actor.id, targetId: target.id });
+                            resolveSkirmish(actor, target, phase, true);
+                        } else {
+                            modRel(actor.id, target.id, 15);
+                            actor.sanity = Math.min(100, actor.sanity + 10);
+                            target.sanity = Math.min(100, target.sanity + 10);
+                            const coopTexts = isNight
+                                ? [
+                                    `&#128293; ${tLink(actor)} and ${tLink(target)} take turns standing guard in ${ARENA_ZONES[actor.zone].name}, sharing stories of home.`,
+                                    `&#127769; ${tLink(actor)} tends to ${tLink(target)}'s bruises while keeping watch for Career packs.`
+                                  ]
+                                : [
+                                    `&#129309; ${tLink(actor)} and ${tLink(target)} hunt together in ${ARENA_ZONES[actor.zone].name}, splitting roasted game (+20 Nourishment).`,
+                                    `&#9876; ${tLink(actor)} and ${tLink(target)} patrol ${ARENA_ZONES[actor.zone].name} back-to-back, hunting down stragglers.`
+                                  ];
+                            if (!isNight) { actor.hunger = Math.min(100, actor.hunger + 20); target.hunger = Math.min(100, target.hunger + 20); }
+                            pushEvent("alliance", coopTexts[Math.floor(Math.random() * coopTexts.length)], { subjectId: actor.id, targetId: target.id });
+                        }
+                    } else {
+                        if (Math.random() < ((actor.cha + target.cha) / 26)) {
+                            modRel(actor.id, target.id, 42);
+                            pushEvent("alliance", `&#129309; ${tLink(actor)} and ${tLink(target)} form a temporary survival pact in ${ARENA_ZONES[actor.zone].name}.`, { subjectId: actor.id, targetId: target.id });
+                        } else {
+                            resolveSkirmish(actor, target, phase, false);
+                        }
+                    }
+                    continue;
+                }
+
+                acted.add(actor.id);
+                const r = Math.random();
+                if (actor.int <= 5 && actor.hunger < 50 && r < 0.28) {
+                    eliminateTribute(actor, null, "Ate poisonous Nightlock berries", phase);
+                    pushEvent("combat", `&#127815; <strong>NIGHTLOCK TRAGEDY!</strong> Starving in ${ARENA_ZONES[actor.zone].name}, ${tLink(actor)} mistakes lethal Nightlock berries for safe fruit and dies within seconds!`, { subjectId: actor.id, type: "kill" });
+                } else if (actor.hunger <= 0) {
+                    const starvDmg = 34;
+                    if (actor.hp <= starvDmg) {
+                        eliminateTribute(actor, null, "Died of severe dehydration and starvation", phase);
+                        pushEvent("combat", `&#128128; <strong>DEHYDRATION:</strong> Unable to find clean water in ${ARENA_ZONES[actor.zone].name}, ${tLink(actor)} succumbs to organ failure!`, { subjectId: actor.id, type: "kill" });
+                    } else {
+                        actor.hp -= starvDmg;
+                        pushEvent("survival", `&#9888; Severely dehydrated and starving in ${ARENA_ZONES[actor.zone].name}, ${tLink(actor)} loses ${starvDmg} HP!`, { subjectId: actor.id });
+                    }
+                } else if (actor.int >= 7 && !getBestWeapon(actor) && r < 0.45) {
+                    const crafted = { name: "Fire-Hardened Hunting Spear", type: "weapon", power: 6, verb: "impales" };
+                    grantItem(actor, crafted, "Crafted from arena timber & flint", phase);
+                    pushEvent("loot", `&#128736; ${tLink(actor)} carves and fire-hardens a <span class="text-gold">${crafted.name}</span> in ${ARENA_ZONES[actor.zone].name}.`, { subjectId: actor.id });
+                } else if (actor.zone === "lake") {
+                    actor.hunger = Math.min(100, actor.hunger + 30);
+                    pushEvent("survival", `&#128167; ${tLink(actor)} purifies fresh water along the river edge (+30 Hydration).`, { subjectId: actor.id });
+                } else {
+                    actor.sanity = Math.min(100, actor.sanity + 6);
+                    pushEvent("survival", isNight
+                        ? `&#127769; ${tLink(actor)} camouflages themselves high in the branches of ${ARENA_ZONES[actor.zone].name} to sleep safely.`
+                        : `&#129517; ${tLink(actor)} scouts ${ARENA_ZONES[actor.zone].name}, tracking footprints and smoke plumes.`, { subjectId: actor.id });
+                }
+            }
+        }
+
+        function simulateFallenSky(phase) {
+            if (state.recentDeaths.length === 0) {
+                pushEvent("system", `&#127756; The Capitol anthem echoes across the arena. Zero cannons fired today—all tributes survived.`);
+                return;
+            }
+            pushEvent("system", `&#128163; <strong>${state.recentDeaths.length} CANNON SHOT${state.recentDeaths.length > 1 ? "S" : ""} BOOM ACROSS PANEM.</strong> Hovercrafts retrieve the fallen as their portraits illuminate the night sky:`);
+            state.recentDeaths.forEach(d => {
+                pushEvent("combat", `&#128367; <strong>${d.name}</strong> (${d.district}) — <em>${d.deathReason}</em>.`, { subjectId: d.id });
+            });
+            state.recentDeaths = [];
+        }
+
+        function simulateFeast(alive, phase) {
+            pushEvent("system", `&#127869; <strong>THE CORNUCOPIA FEAST:</strong> Gamemakers place tailored backpacks at the Cornucopia containing medicine and weapons each remaining tribute desperately needs.`);
+            const attendees = alive.filter(t => t.hp < 85 || t.hunger < 70 || !getBestWeapon(t) || Math.random() < 0.8);
+            attendees.forEach(t => {
+                assignZoneCoords(t, "cornucopia");
+                const pool = [...ITEM_DB.medical, ...ITEM_DB.armor, ...ITEM_DB.weapons];
+                const it = pool[Math.floor(Math.random() * pool.length)];
+                grantItem(t, it, "Claimed at the Cornucopia Feast", phase);
+                pushEvent("loot", `&#128230; ${tLink(t)} dashes into the Feast and grabs a <span class="text-gold">${it.name}</span>!`, { subjectId: t.id });
+            });
+            for (let i = 0; i < attendees.length - 1; i += 2) {
+                if (attendees[i].alive && attendees[i+1].alive) {
+                    resolveSkirmish(attendees[i], attendees[i+1], phase, false);
+                }
+            }
+        }
+
+        function simulateGamemakerHazard(alive, phase, forcedHazard = null) {
+            const hazards = [
+                { name: "Wall of Gamemaker Wildfire", zone: "woods", stat: "agi", desc: "Roaring fireballs erupt across Whispering Woods, driving tributes toward the center!" },
+                { name: "Blistering Acid Fog", zone: "lake", stat: "int", desc: "A toxic yellow acid fog blankets Poison Lake & River!" },
+                { name: "Capitol Wolf Muttations", zone: "ridge", stat: "com", desc: "Genetically engineered Wolf Muttations surge out of Scorched Ridge!" },
+                { name: "Tracker Jacker Wasp Swarm", zone: "ruins", stat: "agi", desc: "Mutated Tracker Jackers swarm through Mockingjay Canopy & Ruins!" }
+            ];
+            const haz = forcedHazard || hazards[Math.floor(Math.random() * hazards.length)];
+            state.activeHazardZone = haz.zone;
+            pushEvent("gamemaker", `&#128680; <strong>GAMEMAKER EVENT — ${haz.name.toUpperCase()}:</strong> ${haz.desc}`, {});
+
+            alive.forEach(t => {
+                const inZone = t.zone === haz.zone;
+                if (inZone || Math.random() < 0.35) {
+                    const roll = t[haz.stat] + (Math.random() * 8);
+                    if (roll < 7.8) {
+                        const dmg = Math.floor(Math.random() * 32) + 22;
+                        if (t.hp <= dmg) {
+                            eliminateTribute(t, null, `Killed by ${haz.name}`, phase);
+                            pushEvent("combat", `&#128128; ${tLink(t)} is caught in ${ARENA_ZONES[haz.zone].name} and eliminated by ${haz.name}!`, { subjectId: t.id, type: "kill" });
+                        } else {
+                            t.hp -= dmg;
+                            assignZoneCoords(t, "cornucopia");
+                            pushEvent("combat", `&#128293; ${tLink(t)} suffers ${dmg} damage fleeing ${haz.name} toward the Cornucopia!`, { subjectId: t.id });
+                        }
+                    } else {
+                        assignZoneCoords(t, "cornucopia");
+                        pushEvent("survival", `&#128168; ${tLink(t)} outruns ${haz.name} without taking a scratch!`, { subjectId: t.id });
+                    }
+                }
+            });
+        }
+
+        function concludeGames(victor) {
+            stopAutoPlay();
+            state.gameOver = true;
+            const btn = document.getElementById("btnProceed");
+            btn.disabled = true;
+            btn.innerHTML = "&#128081; VICTOR CROWNED";
+
+            if (victor) {
+                pushEvent("system", `&#128081; <strong>ALL HAIL THE VICTOR OF THE HUNGER GAMES: ${victor.name.toUpperCase()} (${victor.district.toUpperCase()})!</strong> (${victor.kills} Kills • ${victor.hp} HP)`);
+                toast(`${victor.name} wins the Hunger Games!`);
+            } else {
+                pushEvent("system", `&#128128; No tributes survived the arena. The Capitol declares no victor.`);
+            }
+        }
+
+        // =====================================================================
+        // 6. GAMEMAKER INTERVENTIONS: EVENT REROLL, EDIT & LIVE CONSOLE
+        // =====================================================================
+        function rerollEvent(logId) {
+            const idx = state.logs.findIndex(l => l.id === logId);
+            if (idx === -1) return;
+            const ev = state.logs[idx];
+            const subj = state.tributes.find(t => t.id === ev.subjectId);
+            const targ = state.tributes.find(t => t.id === ev.targetId);
+
+            if (!subj) return toast("Cannot reroll system announcements.");
+            saveSnapshot();
+
+            [subj, targ].filter(Boolean).forEach(t => {
+                if (!t.alive && t.deathPhase === ev.phase) {
+                    t.alive = true;
+                    t.hp = 65;
+                    t.deathReason = null;
+                    t.deathPhase = null;
+                    state.recentDeaths = state.recentDeaths.filter(d => d.id !== t.id);
+                    state.fallenMarkers = state.fallenMarkers.filter(m => m.name !== t.name);
+                }
+            });
+
+            if (subj && targ) {
+                if (Math.random() < 0.5) {
+                    modRel(subj.id, targ.id, 50);
+                    ev.category = "alliance";
+                    ev.html = `&#9851; <strong>[REROLLED]</strong> Instead of fighting, ${tLink(subj)} and ${tLink(targ)} call a sudden truce and share supplies in ${ARENA_ZONES[subj.zone].name}!`;
+                } else {
+                    const dmg = Math.floor(Math.random() * 20) + 10;
+                    subj.hp = Math.max(15, subj.hp - dmg);
+                    ev.category = "combat";
+                    ev.html = `&#9851; <strong>[REROLLED]</strong> ${tLink(targ)} turns the tables on ${tLink(subj)}, inflicting ${dmg} damage before both scatter!`;
+                }
+            } else {
+                const gift = ITEM_DB.supplies[Math.floor(Math.random() * ITEM_DB.supplies.length)];
+                grantItem(subj, gift, "Rerolled Sponsor Parachute", ev.phase);
+                ev.category = "loot";
+                ev.html = `&#9851; <strong>[REROLLED]</strong> ${tLink(subj)} discovers a hidden <span class="text-gold">${gift.name}</span> in ${ARENA_ZONES[subj.zone].name}!`;
+            }
+
+            state.gameOver = state.tributes.filter(t => t.alive).length <= 1;
+            refreshAllArenaUI();
+            toast("Event outcome rerolled!");
+        }
+
+        function openEditEventModal(logId) {
+            const ev = state.logs.find(l => l.id === logId);
+            if (!ev) return;
+            state.editingLogId = logId;
+            document.getElementById("editLogText").value = ev.html.replace(/<[^>]*>?/gm, "");
+
+            const opts = `<option value="">-- None --</option>` + state.tributes.map(t => `<option value="${t.id}">${t.name} (${t.alive ? t.hp + " HP" : "FALLEN"})</option>`).join("");
+            const sSel = document.getElementById("editSubjSelect");
+            const tSel = document.getElementById("editTargSelect");
+            sSel.innerHTML = opts;
+            tSel.innerHTML = opts;
+            if (ev.subjectId) sSel.value = ev.subjectId;
+            if (ev.targetId) tSel.value = ev.targetId;
+            document.getElementById("editActionSelect").value = "textOnly";
+
+            document.getElementById("editEventModal").classList.remove("hidden");
+        }
+
+        function saveEditedEvent() {
+            const ev = state.logs.find(l => l.id === state.editingLogId);
+            if (!ev) return;
+            saveSnapshot();
+
+            const rawText = document.getElementById("editLogText").value.trim();
+            const action = document.getElementById("editActionSelect").value;
+            const subj = state.tributes.find(t => t.id === document.getElementById("editSubjSelect").value);
+            const targ = state.tributes.find(t => t.id === document.getElementById("editTargSelect").value);
+
+            ev.html = `&#9998; <strong>[GAMEMAKER EDIT]</strong> ${rawText}`;
+
+            if (action === "killTarget" && targ) {
+                eliminateTribute(targ, subj || null, subj ? `Eliminated by ${subj.name} (Gamemaker Decree)` : "Eliminated by Gamemaker Decree", ev.phase);
+                ev.category = "combat";
+                if (!rawText) ev.html = `&#128128; <strong>[GAMEMAKER DECREE]</strong> ${subj ? tLink(subj) + " eliminates " : ""}${tLink(targ)}!`;
+            } else if (action === "reviveTarget" && targ) {
+                targ.alive = true;
+                targ.hp = 75;
+                targ.deathReason = null;
+                targ.deathPhase = null;
+                state.recentDeaths = state.recentDeaths.filter(d => d.id !== targ.id);
+                state.fallenMarkers = state.fallenMarkers.filter(m => m.name !== targ.name);
+                ev.category = "alliance";
+                if (!rawText) ev.html = `&#10024; <strong>[GAMEMAKER MERCY]</strong> ${tLink(targ)} survives the encounter with 75 HP!`;
+            } else if (action === "allyPair" && subj && targ) {
+                modRel(subj.id, targ.id, 75);
+                ev.category = "alliance";
+                if (!rawText) ev.html = `&#129309; <strong>[GAMEMAKER PACT]</strong> ${tLink(subj)} and ${tLink(targ)} forge an unbreakable alliance!`;
+            } else if (action === "sponsorHeal" && subj) {
+                subj.alive = true;
+                subj.hp = Math.min(100, subj.hp + 40);
+                subj.hunger = 100;
+                subj.infected = false;
+                grantItem(subj, ITEM_DB.medical[0], "Gamemaker Emergency Parachute", ev.phase);
+                ev.category = "loot";
+            }
+
+            const aliveCount = state.tributes.filter(t => t.alive).length;
+            state.gameOver = aliveCount <= 1;
+            const btnProc = document.getElementById("btnProceed");
+            btnProc.disabled = state.gameOver;
+            btnProc.innerHTML = state.gameOver ? "VICTOR CROWNED" : "PROCEED &#9654;";
+
+            closeModal("editEventModal");
+            refreshAllArenaUI();
+            toast("Gamemaker override applied!");
+        }
+
+        function openGamemakerActionModal(mode) {
+            const title = document.getElementById("gmModalTitle");
+            const body = document.getElementById("gmModalBody");
+            const alive = state.tributes.filter(t => t.alive);
+            if (!alive.length) return;
+
+            const aliveOpts = alive.map(t => `<option value="${t.id}">${t.name} (${t.district} • ${t.hp} HP)</option>`).join("");
+
+            if (mode === "sponsor") {
+                title.textContent = "DROP SILVER SPONSOR PARACHUTE";
+                const allItems = [...ITEM_DB.weapons, ...ITEM_DB.armor, ...ITEM_DB.medical, ...ITEM_DB.supplies];
+                const itemOpts = allItems.map((it, idx) => `<option value="${idx}">${it.name} (${it.type.toUpperCase()})</option>`).join("");
+                body.innerHTML = `
+                    <div><label class="text-xs text-muted block">Recipient Tribute</label><select id="gmSponsorTrib" class="w-full">${aliveOpts}</select></div>
+                    <div><label class="text-xs text-muted block">Parachute Contents</label><select id="gmSponsorItem" class="w-full">${itemOpts}</select></div>
+                    <button onclick="executeGmSponsor()" class="btn btn-gold w-full">Launch Parachute</button>
+                `;
+            } else if (mode === "encounter") {
+                title.textContent = "FORCE TRIBUTE ENCOUNTER";
+                body.innerHTML = `
+                    <div><label class="text-xs text-muted block">Tribute A</label><select id="gmEncA" class="w-full">${aliveOpts}</select></div>
+                    <div><label class="text-xs text-muted block">Tribute B</label><select id="gmEncB" class="w-full">${aliveOpts}</select></div>
+                    <div><label class="text-xs text-muted block">Forced Interaction</label>
+                        <select id="gmEncMode" class="w-full">
+                            <option value="duel">Lethal Combat Skirmish</option>
+                            <option value="ally">Forge Alliance (+60 Affinity)</option>
+                        </select>
+                    </div>
+                    <button onclick="executeGmEncounter()" class="btn btn-cyan w-full">Execute Encounter</button>
+                `;
+            } else if (mode === "hazard") {
+                title.textContent = "TRIGGER GAMEMAKER ARENA HAZARD";
+                body.innerHTML = `
+                    <div><label class="text-xs text-muted block">Select Hazard / Muttation</label>
+                        <select id="gmHazSelect" class="w-full">
+                            <option value="0">Wall of Wildfire (Whispering Woods)</option>
+                            <option value="1">Toxic Acid Fog (Poison Lake)</option>
+                            <option value="2">Capitol Wolf Muttations (Scorched Ridge)</option>
+                            <option value="3">Tracker Jacker Swarm (Mockingjay Ruins)</option>
+                        </select>
+                    </div>
+                    <button onclick="executeGmHazard()" class="btn btn-crimson w-full">Unleash Hazard Now</button>
+                `;
+            }
+            document.getElementById("gmActionModal").classList.remove("hidden");
+        }
+
+        function executeGmSponsor() {
+            const allItems = [...ITEM_DB.weapons, ...ITEM_DB.armor, ...ITEM_DB.medical, ...ITEM_DB.supplies];
+            const t = state.tributes.find(x => x.id === document.getElementById("gmSponsorTrib").value);
+            const it = allItems[parseInt(document.getElementById("gmSponsorItem").value)];
+            if (!t || !it) return;
+            saveSnapshot();
+            grantItem(t, it, "Gamemaker Direct Silver Parachute", getPhaseTitle());
+            pushEvent("gamemaker", `&#129666; <strong>GAMEMAKER DROP:</strong> A silver parachute descends to ${tLink(t)} with a <span class="text-gold">${it.name}</span>!`, { subjectId: t.id });
+            closeModal("gmActionModal");
+            refreshAllArenaUI();
+        }
+
+        function executeGmEncounter() {
+            const a = state.tributes.find(x => x.id === document.getElementById("gmEncA").value);
+            const b = state.tributes.find(x => x.id === document.getElementById("gmEncB").value);
+            const mode = document.getElementById("gmEncMode").value;
+            if (!a || !b || a.id === b.id) return toast("Select two different tributes.");
+            saveSnapshot();
+            b.zone = a.zone; b.x = a.x + 12; b.y = a.y + 8;
+            if (mode === "ally") {
+                modRel(a.id, b.id, 65);
+                pushEvent("gamemaker", `&#129309; <strong>FORCED PACT:</strong> Gamemakers herd ${tLink(a)} and ${tLink(b)} together in ${ARENA_ZONES[a.zone].name}, forging an alliance!`, { subjectId: a.id, targetId: b.id });
+            } else {
+                resolveSkirmish(a, b, getPhaseTitle(), false);
+            }
+            if (state.tributes.filter(t => t.alive).length <= 1) concludeGames(state.tributes.find(t => t.alive));
+            closeModal("gmActionModal");
+            refreshAllArenaUI();
+        }
+
+        function executeGmHazard() {
+            const hazards = [
+                { name: "Wall of Gamemaker Wildfire", zone: "woods", stat: "agi", desc: "Roaring fireballs erupt across Whispering Woods!" },
+                { name: "Blistering Acid Fog", zone: "lake", stat: "int", desc: "Toxic yellow acid fog blankets Poison Lake & River!" },
+                { name: "Capitol Wolf Muttations", zone: "ridge", stat: "com", desc: "Genetically engineered Wolf Muttations surge from Scorched Ridge!" },
+                { name: "Tracker Jacker Wasp Swarm", zone: "ruins", stat: "agi", desc: "Mutated Tracker Jackers swarm Mockingjay Ruins!" }
+            ];
+            const haz = hazards[parseInt(document.getElementById("gmHazSelect").value)];
+            saveSnapshot();
+            simulateGamemakerHazard(state.tributes.filter(t => t.alive), getPhaseTitle(), haz);
+            if (state.tributes.filter(t => t.alive).length <= 1) concludeGames(state.tributes.find(t => t.alive));
+            closeModal("gmActionModal");
+            refreshAllArenaUI();
+        }
+
+        function triggerManualFeast() {
+            if (state.gameOver) return;
+            saveSnapshot();
+            simulateFeast(state.tributes.filter(t => t.alive), getPhaseTitle());
+            if (state.tributes.filter(t => t.alive).length <= 1) concludeGames(state.tributes.find(t => t.alive));
+            refreshAllArenaUI();
+        }
+
+        // =====================================================================
+        // 7. AUTO-PLAY & UI RENDERERS (VITALS, LOGS, MAP, INSPECTOR, MODALS)
+        // =====================================================================
+        function toggleAutoPlay() {
+            if (state.autoTimer) {
+                stopAutoPlay();
+            } else {
+                if (state.gameOver) return;
+                const ms = parseInt(document.getElementById("selSpeed").value) || 1100;
+                document.getElementById("autoPlayLbl").innerHTML = "&#9208; Pause";
+                advancePhase();
+                state.autoTimer = setInterval(() => {
+                    if (state.gameOver) return stopAutoPlay();
+                    advancePhase();
+                }, ms);
+            }
+        }
+
+        function stopAutoPlay() {
+            if (state.autoTimer) clearInterval(state.autoTimer);
+            state.autoTimer = null;
+            document.getElementById("autoPlayLbl").innerHTML = "&#9654; Auto";
+        }
+
+        function setLogFilter(f) {
+            state.logFilter = f;
+            document.querySelectorAll(".lf-btn").forEach(b => {
+                b.className = b.dataset.lf === f ? "lf-btn btn btn-xs btn-gold" : "lf-btn btn btn-xs";
+            });
+            renderLogs();
+        }
+
+        function refreshAllArenaUI() {
+            const alive = state.tributes.filter(t => t.alive).length;
+            const total = state.tributes.length;
+            const fallen = total - alive;
+
+            document.getElementById("hdrPhase").textContent = getPhaseTitle().toUpperCase();
+            document.getElementById("hdrAlive").textContent = alive;
+            document.getElementById("hdrTotal").textContent = total;
+            document.getElementById("hdrFallen").textContent = fallen;
+            document.getElementById("fallenBadge").textContent = fallen;
+
+            document.getElementById("badgePhaseType").textContent = state.phaseType.toUpperCase();
+            document.getElementById("lblPhaseHeadline").textContent = getPhaseTitle();
+            document.getElementById("badgeArenaWeather").textContent = state.activeHazardZone
+                ? `HAZARD: ${ARENA_ZONES[state.activeHazardZone].name.toUpperCase()}`
+                : (state.phaseType === "Night" || state.phaseType === "Fallen" ? "ARENA NIGHT SKY" : "CLEAR SKIES");
+
+            renderVitalsSidebar();
+            renderLogs();
+            renderArenaMap();
+            if (state.selectedMapTributeId) inspectMapTribute(state.selectedMapTributeId);
+        }
+
+        function renderVitalsSidebar() {
+            const box = document.getElementById("vitalsList");
+            const filter = document.getElementById("rosterFilter").value;
+            let list = [...state.tributes].sort((a, b) => (a.alive === b.alive ? b.kills - a.kills : (a.alive ? -1 : 1)));
+            if (filter === "alive") list = list.filter(t => t.alive);
+            if (filter === "dead") list = list.filter(t => !t.alive);
+
+            box.innerHTML = list.map(t => {
+                const wep = getBestWeapon(t);
+                const dColor = DISTRICT_COLORS[t.district] || "#94a3b8";
+                if (!t.alive) {
+                    return `
+                        <div onclick="openDossier('${t.id}')" style="background: rgba(15,18,25,0.5); border: 1px solid #1e2433; border-radius: 8px; padding: 0.5rem 0.65rem; opacity: 0.6; cursor: pointer;">
+                            <div class="flex justify-between items-center text-xs">
+                                <span style="text-decoration: line-through;" class="text-muted font-bold truncate">&#9760; ${t.name}</span>
+                                <span class="badge badge-crimson">FALLEN</span>
+                            </div>
+                            <div class="text-xs text-dim truncate" style="margin-top: 2px;">${t.district} • ${t.deathReason || "Eliminated"}</div>
+                        </div>
+                    `;
+                }
+                const hpCol = t.hp > 60 ? "var(--emerald-500)" : (t.hp > 30 ? "var(--gold-500)" : "var(--crimson-500)");
+                return `
+                    <div onclick="inspectMapTribute('${t.id}'); openDossier('${t.id}')" style="background: var(--bg-obsidian); border: 1px solid var(--border-subtle); border-left: 3px solid ${dColor}; border-radius: 8px; padding: 0.55rem 0.7rem; cursor: pointer;">
+                        <div class="flex justify-between items-center gap-1">
+                            <span class="text-xs font-bold truncate">${t.name} ${t.kills > 0 ? `<span class="text-crimson font-mono">[${t.kills}K]</span>` : ""}</span>
+                            <span class="font-mono text-xs font-bold">${t.hp} HP</span>
+                        </div>
+                        <div class="text-xs text-muted truncate" style="margin: 2px 0 5px 0;">
+                            ${t.district} • ${wep ? `<span class="text-gold">${wep.name}</span>` : "Unarmed"}
+                        </div>
+                        <div class="bar-track"><div class="bar-fill" style="width:${t.hp}%; background:${hpCol};"></div></div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function renderLogs() {
+            const feed = document.getElementById("narrativeFeed");
+            const filtered = state.logs.filter(l => state.logFilter === "all" || l.category === state.logFilter);
+
+            if (!filtered.length) {
+                feed.innerHTML = `<div class="text-muted text-sm" style="text-align: center; padding: 2.5rem;">No events match the active filter for this phase.</div>`;
+                return;
+            }
+
+            const catClass = {
+                combat: "ev-combat",
+                alliance: "ev-alliance",
+                loot: "ev-loot",
+                survival: "ev-survival",
+                system: "ev-system",
+                gamemaker: "ev-gamemaker"
+            };
+
+            feed.innerHTML = filtered.map(ev => `
+                <div class="event-card ${catClass[ev.category] || "ev-survival"}">
+                    <div style="padding-right: 95px;">${ev.html}</div>
+                    <div class="flex gap-1" style="position: absolute; top: 0.55rem; right: 0.6rem;">
+                        ${ev.subjectId ? `<button onclick="rerollEvent('${ev.id}')" class="btn btn-xs" title="Reroll this event outcome">&#9851; Reroll</button>` : ""}
+                        <button onclick="openEditEventModal('${ev.id}')" class="btn btn-xs" title="Manually edit text or outcome">&#9998; Edit</button>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        // =====================================================================
+        // 8. INTERACTIVE TACTICAL ARENA SVG MAP RENDERER
+        // =====================================================================
+        function renderArenaMap() {
+            const hazLayer = document.getElementById("mapHazardLayer");
+            const allyLayer = document.getElementById("mapAllianceLayer");
+            const fallLayer = document.getElementById("mapFallenLayer");
+            const tribLayer = document.getElementById("mapTributeLayer");
+            const mode = document.getElementById("mapHighlightSelect").value;
+
+            if (state.activeHazardZone && ARENA_ZONES[state.activeHazardZone]) {
+                const hz = ARENA_ZONES[state.activeHazardZone];
+                hazLayer.innerHTML = `<circle cx="${hz.cx}" cy="${hz.cy}" r="${hz.r + 18}" fill="rgba(239, 68, 68, 0.25)" stroke="#ef4444" stroke-width="2" class="map-pulse" />`;
+            } else {
+                hazLayer.innerHTML = "";
+            }
+
+            fallLayer.innerHTML = state.fallenMarkers.map(f => `
+                <g opacity="0.65">
+                    <title>FALLEN: ${f.name} (${f.district}) — ${f.phase}</title>
+                    <line x1="${f.x - 4}" y1="${f.y - 4}" x2="${f.x + 4}" y2="${f.y + 4}" stroke="#ef4444" stroke-width="1.8" />
+                    <line x1="${f.x + 4}" y1="${f.y - 4}" x2="${f.x - 4}" y2="${f.y + 4}" stroke="#ef4444" stroke-width="1.8" />
+                </g>
+            `).join("");
+
+            const alive = state.tributes.filter(t => t.alive);
+            let linesHtml = "";
+            for (let i = 0; i < alive.length; i++) {
+                for (let j = i + 1; j < alive.length; j++) {
+                    const rel = getRel(alive[i].id, alive[j].id);
+                    if (rel >= 35) {
+                        const isSel = state.selectedMapTributeId === alive[i].id || state.selectedMapTributeId === alive[j].id;
+                        const opacity = mode === "alliances" || isSel ? "0.8" : "0.28";
+                        linesHtml += `<line x1="${alive[i].x}" y1="${alive[i].y}" x2="${alive[j].x}" y2="${alive[j].y}" stroke="#34d399" stroke-width="${isSel ? 2 : 1.1}" stroke-dasharray="3 3" opacity="${opacity}" />`;
+                    }
+                }
+            }
+            allyLayer.innerHTML = linesHtml;
+
+            tribLayer.innerHTML = alive.map(t => {
+                const col = DISTRICT_COLORS[t.district] || "#fbbf24";
+                const isSelected = state.selectedMapTributeId === t.id;
+                const shortName = t.name.split(" ")[0].slice(0, 9);
+                return `
+                    <g class="map-marker" onclick="inspectMapTribute('${t.id}')">
+                        <title>${t.name} (${t.district}) — ${t.hp} HP | Zone: ${ARENA_ZONES[t.zone]?.name || t.zone}</title>
+                        ${isSelected ? `<circle cx="${t.x}" cy="${t.y}" r="13" fill="none" stroke="#fbbf24" stroke-width="2" class="map-pulse" />` : ""}
+                        <circle cx="${t.x}" cy="${t.y}" r="6.5" fill="${col}" stroke="#07080c" stroke-width="1.5" />
+                        <text x="${t.x}" y="${t.y - 9}" text-anchor="middle" fill="${isSelected ? "#fbbf24" : "#e2e8f0"}" font-size="8.5" font-family="sans-serif" font-weight="${isSelected ? "bold" : "normal"}">${shortName}</text>
+                    </g>
+                `;
+            }).join("");
+        }
+
+        function inspectMapTribute(id) {
+            state.selectedMapTributeId = id;
+            renderArenaMap();
+            const t = state.tributes.find(x => x.id === id);
+            const card = document.getElementById("mapInspectorCard");
+            if (!t) return;
+
+            const zoneName = ARENA_ZONES[t.zone]?.name || "Arena Sector";
+            const allies = state.tributes.filter(o => o.alive && o.id !== t.id && getRel(t.id, o.id) >= 35).map(o => o.name);
+            const invHtml = t.inventory.length
+                ? t.inventory.map(it => `<div class="text-xs" style="padding: 3px 0; border-bottom: 1px dashed #1e2433;"><strong class="text-gold">${it.name}</strong> <span class="text-dim">— ${it.how}</span></div>`).join("")
+                : `<div class="text-xs text-dim">Carrying no weapons or supplies.</div>`;
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start gap-2">
+                    <div>
+                        <div class="font-bold text-sm text-gold">${t.name} <span class="badge">${t.district}</span></div>
+                        <div class="text-xs text-cyan font-mono" style="margin-top: 2px;">&#128205; ${zoneName} (${t.x}, ${t.y})</div>
+                    </div>
+                    <button onclick="openDossier('${t.id}')" class="btn btn-xs btn-gold">Full Dossier</button>
+                </div>
+                <div class="flex gap-3 font-mono text-xs" style="margin: 0.5rem 0; padding: 0.4rem; background: var(--bg-charcoal); border-radius: 6px;">
+                    <span>HP: <strong class="text-emerald">${t.hp}</strong></span>
+                    <span>HUN/H2O: <strong class="text-cyan">${t.hunger}</strong></span>
+                    <span>SANITY: <strong class="text-purple">${t.sanity}</strong></span>
+                    <span>KILLS: <strong class="text-crimson">${t.kills}</strong></span>
+                </div>
+                <div class="text-xs" style="margin-bottom: 0.4rem;">
+                    <span class="text-muted font-bold">ALLIES:</span> ${allies.length ? `<span class="text-emerald">${allies.join(", ")}</span>` : `<span class="text-dim">Solo / Unallied</span>`}
+                </div>
+                <div>
+                    <div class="text-xs text-muted font-bold" style="margin-bottom: 2px;">EQUIPPED GEAR & PROVENANCE:</div>
+                    ${invHtml}
+                </div>
+            `;
+        }
+
+        // =====================================================================
+        // 9. FULL DOSSIER & FALLEN MEMORIAL MODALS
+        // =====================================================================
+        function openDossier(id) {
+            const t = state.tributes.find(x => x.id === id);
+            if (!t) return;
+
+            document.getElementById("dosTitle").textContent = t.name;
+            document.getElementById("dosSub").textContent = `${t.district} • ${t.origin} • Zone: ${ARENA_ZONES[t.zone]?.name || t.zone} • Eliminations: ${t.kills}`;
+
+            const badge = document.getElementById("dosBadge");
+            const dBox = document.getElementById("dosDeathBox");
+            if (t.alive) {
+                badge.textContent = "ALIVE";
+                badge.className = "badge badge-emerald";
+                dBox.classList.add("hidden");
+            } else {
+                badge.textContent = `FALLEN (${t.deathPhase || "ARENA"})`;
+                badge.className = "badge badge-crimson";
+                dBox.textContent = `Cause of Death: ${t.deathReason}`;
+                dBox.classList.remove("hidden");
+            }
+
+            document.getElementById("dosHp").textContent = `${t.hp}/100`;
+            document.getElementById("dosHpBar").style.width = `${t.hp}%`;
+            document.getElementById("dosHun").textContent = `${t.hunger}/100`;
+            document.getElementById("dosHunBar").style.width = `${t.hunger}%`;
+            document.getElementById("dosSan").textContent = `${t.sanity}/100`;
+            document.getElementById("dosSanBar").style.width = `${t.sanity}%`;
+
+            document.getElementById("dosStatsList").innerHTML = `
+                <div style="background: var(--bg-charcoal); padding: 4px 8px; border-radius: 5px;">Strength: <strong>${t.str}/10</strong></div>
+                <div style="background: var(--bg-charcoal); padding: 4px 8px; border-radius: 5px;">Agility: <strong>${t.agi}/10</strong></div>
+                <div style="background: var(--bg-charcoal); padding: 4px 8px; border-radius: 5px;">Survival/IQ: <strong>${t.int}/10</strong></div>
+                <div style="background: var(--bg-charcoal); padding: 4px 8px; border-radius: 5px;">Combat: <strong>${t.com}/10</strong></div>
+                <div style="background: var(--bg-charcoal); padding: 4px 8px; border-radius: 5px; grid-column: 1/-1;">Charisma (Sponsors): <strong class="text-gold">${t.cha}/10</strong></div>
+            `;
+
+            document.getElementById("dosInvCount").textContent = `${t.inventory.length} Item(s)`;
+            document.getElementById("dosInvList").innerHTML = t.inventory.length
+                ? t.inventory.map(it => `
+                    <div style="background: var(--bg-charcoal); padding: 0.45rem 0.65rem; border-radius: 6px; border: 1px solid var(--border-subtle);" class="flex justify-between items-center gap-2 text-xs">
+                        <div>
+                            <strong class="text-gold">${it.name}</strong>
+                            ${it.power ? `<span class="badge badge-crimson">ATK +${it.power}</span>` : ""}
+                            ${it.defense ? `<span class="badge badge-cyan">DEF +${it.defense}%</span>` : ""}
+                            ${it.heal ? `<span class="badge badge-emerald">HEAL +${it.heal}</span>` : ""}
+                        </div>
+                        <span class="text-muted">${it.how} (${it.phase})</span>
+                    </div>
+                  `).join("")
+                : `<div class="text-xs text-dim">No items carried.</div>`;
+
+            const others = state.tributes.filter(o => o.id !== t.id).map(o => ({ o, s: getRel(t.id, o.id) })).sort((a, b) => b.s - a.s);
+            document.getElementById("dosRelList").innerHTML = others.map(({ o, s }) => {
+                const col = s >= 45 ? "text-emerald" : (s >= 15 ? "text-cyan" : (s <= -45 ? "text-crimson" : "text-muted"));
+                const lbl = s >= 45 ? "Sworn Ally" : (s >= 15 ? "Friendly" : (s <= -45 ? "Nemesis" : (s <= -15 ? "Hostile" : "Neutral")));
+                return `
+                    <div style="background: var(--bg-charcoal); padding: 4px 8px; border-radius: 5px;" class="flex justify-between text-xs">
+                        <span class="truncate" style="${o.alive ? "" : "text-decoration:line-through; opacity:0.5;"}">${o.name}</span>
+                        <span class="font-mono ${col}">${lbl} (${s > 0 ? "+" + s : s})</span>
+                    </div>
+                `;
+            }).join("");
+
+            document.getElementById("dosTimeline").innerHTML = t.timeline.map(line => `<div style="padding: 2px 0; border-bottom: 1px solid #181d2b;">${line}</div>`).join("");
+            document.getElementById("dossierModal").classList.remove("hidden");
+        }
+
+        function openMemorialModal() {
+            const fallen = state.tributes.filter(t => !t.alive);
+            const grid = document.getElementById("memorialGrid");
+            grid.innerHTML = fallen.length
+                ? fallen.map((t, i) => `
+                    <div onclick="closeModal('memorialModal'); openDossier('${t.id}')" style="background: var(--bg-obsidian); border: 1px solid var(--border-subtle); border-radius: 9px; padding: 0.75rem; cursor: pointer;">
+                        <div class="font-display font-bold text-sm">#${i+1} ${t.name} <span class="badge badge-gold">${t.district}</span></div>
+                        <div class="text-xs text-crimson" style="margin-top: 4px;">&#9760; ${t.deathReason}</div>
+                        <div class="text-xs font-mono text-dim" style="margin-top: 2px;">${t.deathPhase || "Arena"} • Kills: ${t.kills}</div>
+                    </div>
+                  `).join("")
+                : `<div class="text-muted text-sm" style="grid-column: 1/-1; text-align: center; padding: 2rem;">No cannons have fired yet.</div>`;
+            document.getElementById("memorialModal").classList.remove("hidden");
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
+
+        window.addEventListener("keydown", e => {
+            if (e.key === "Escape") ["dossierModal", "editEventModal", "gmActionModal", "memorialModal"].forEach(closeModal);
+        });
+
+        window.onload = () => loadPreset("allStarChaos");
+    </script>
+</body>
+</html>
