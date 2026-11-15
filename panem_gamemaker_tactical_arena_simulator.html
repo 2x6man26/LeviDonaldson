@@ -1,0 +1,2066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panem Gamemaker Tactical Arena Simulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-obsidian: #07080c;
+            --bg-panel: #0f121a;
+            --bg-card: #151924;
+            --bg-hover: #1c2231;
+            --border-subtle: rgba(255, 255, 255, 0.09);
+            --border-gold: rgba(245, 158, 11, 0.45);
+            --gold-500: #f59e0b;
+            --gold-400: #fbbf24;
+            --crimson-500: #ef4444;
+            --crimson-400: #f87171;
+            --emerald-500: #10b981;
+            --emerald-400: #34d399;
+            --cyan-400: #22d3ee;
+            --purple-400: #c084fc;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-obsidian);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.45;
+        }
+
+        .font-display { font-family: 'Cinzel', serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-obsidian); }
+        ::-webkit-scrollbar-thumb { background: #262d3f; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold-500); }
+
+        /* Layout & Utility Classes */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .flex-wrap { flex-wrap: wrap; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-1 { gap: 0.25rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .w-full { width: 100%; }
+        .text-xs { font-size: 0.75rem; }
+        .text-sm { font-size: 0.85rem; }
+        .text-base { font-size: 1rem; }
+        .text-lg { font-size: 1.15rem; }
+        .text-xl { font-size: 1.35rem; }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .block { display: block; }
+
+        .text-gold { color: var(--gold-400); }
+        .text-crimson { color: var(--crimson-400); }
+        .text-emerald { color: var(--emerald-400); }
+        .text-cyan { color: var(--cyan-400); }
+        .text-purple { color: var(--purple-400); }
+        .text-muted { color: var(--text-muted); }
+        .text-dim { color: var(--text-dim); }
+
+        /* Header */
+        .top-header {
+            background: linear-gradient(180deg, #111520 0%, #090b10 100%);
+            border-bottom: 1px solid var(--border-gold);
+            padding: 0.75rem 1.25rem;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.65);
+        }
+
+        .status-pill-bar {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            border-radius: 999px;
+            padding: 0.3rem 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            font-size: 0.78rem;
+        }
+
+        /* Panels & Cards */
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .panel-header {
+            background: rgba(255, 255, 255, 0.025);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0.7rem 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            background: #1b202e;
+            color: var(--text-main);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 0.45rem 0.85rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.16s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+        }
+        .btn:hover:not(:disabled) {
+            background: #252c3f;
+            border-color: rgba(255, 255, 255, 0.22);
+            transform: translateY(-1px);
+        }
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.74rem; }
+        .btn-xs { padding: 0.18rem 0.45rem; font-size: 0.68rem; border-radius: 6px; }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            border-color: var(--gold-400);
+            color: #fff;
+            box-shadow: 0 0 14px rgba(245, 158, 11, 0.25);
+        }
+        .btn-gold:hover:not(:disabled) {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            box-shadow: 0 0 18px rgba(245, 158, 11, 0.45);
+        }
+
+        .btn-crimson {
+            background: rgba(239, 68, 68, 0.16);
+            border-color: rgba(239, 68, 68, 0.45);
+            color: #fca5a5;
+        }
+        .btn-crimson:hover:not(:disabled) {
+            background: rgba(239, 68, 68, 0.3);
+            color: #fff;
+        }
+
+        .btn-cyan {
+            background: rgba(34, 211, 238, 0.14);
+            border-color: rgba(34, 211, 238, 0.4);
+            color: #67e8f9;
+        }
+        .btn-cyan:hover:not(:disabled) {
+            background: rgba(34, 211, 238, 0.26);
+            color: #fff;
+        }
+
+        /* Inputs & Selects */
+        input[type="text"], select, textarea {
+            background: var(--bg-obsidian);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            border-radius: 7px;
+            padding: 0.45rem 0.65rem;
+            font-family: inherit;
+            font-size: 0.82rem;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        input[type="text"]:focus, select:focus, textarea:focus {
+            border-color: var(--gold-500);
+        }
+        input[type="range"] {
+            accent-color: var(--gold-500);
+            cursor: pointer;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.14rem 0.45rem;
+            border-radius: 5px;
+            font-size: 0.67rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            background: rgba(255, 255, 255, 0.07);
+            color: var(--text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .badge-gold { background: rgba(245, 158, 11, 0.16); color: var(--gold-400); border-color: rgba(245, 158, 11, 0.35); }
+        .badge-crimson { background: rgba(239, 68, 68, 0.16); color: var(--crimson-400); border-color: rgba(239, 68, 68, 0.35); }
+        .badge-cyan { background: rgba(34, 211, 238, 0.14); color: var(--cyan-400); border-color: rgba(34, 211, 238, 0.3); }
+        .badge-emerald { background: rgba(16, 185, 129, 0.15); color: var(--emerald-400); border-color: rgba(16, 185, 129, 0.3); }
+
+        /* Setup View Layout */
+        .setup-container {
+            max-width: 1460px;
+            margin: 0 auto;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+        }
+        .setup-grid {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 1.1rem;
+            align-items: start;
+        }
+        .roster-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(235px, 1fr));
+            gap: 0.75rem;
+            max-height: 72vh;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .tribute-setup-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 0.7rem;
+            transition: border-color 0.15s, transform 0.15s;
+        }
+        .tribute-setup-card:hover {
+            border-color: var(--border-gold);
+            transform: translateY(-2px);
+        }
+        .stat-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+            margin-top: 8px;
+        }
+        .stat-mini-box {
+            background: var(--bg-obsidian);
+            border-radius: 5px;
+            padding: 3px 2px;
+            text-align: center;
+            font-size: 0.68rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Live Arena 3-Column Command Center */
+        .arena-container {
+            max-width: 1680px;
+            margin: 0 auto;
+            padding: 0.9rem;
+            display: grid;
+            grid-template-columns: 320px 1fr 410px;
+            gap: 0.9rem;
+            height: calc(100vh - 64px);
+        }
+        .arena-col {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+        }
+        .scroll-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+        }
+
+        /* Tribute Vitals Card in Left Sidebar */
+        .vital-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 9px;
+            padding: 0.55rem 0.65rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .vital-card:hover { border-color: var(--border-gold); background: var(--bg-hover); }
+        .vital-card.dead { opacity: 0.52; background: #0c0e14; }
+        .bar-track {
+            height: 5px;
+            background: #07080c;
+            border-radius: 99px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .bar-fill { height: 100%; border-radius: 99px; transition: width 0.25s ease; }
+
+        /* Event Feed Cards */
+        .event-card {
+            background: var(--bg-card);
+            border-left: 3px solid var(--text-dim);
+            border-top: 1px solid var(--border-subtle);
+            border-right: 1px solid var(--border-subtle);
+            border-bottom: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 0.6rem 0.75rem;
+            font-size: 0.83rem;
+            animation: slideIn 0.22s ease-out;
+        }
+        .event-combat { border-left-color: var(--crimson-500); background: rgba(239, 68, 68, 0.06); }
+        .event-alliance { border-left-color: var(--cyan-400); background: rgba(34, 211, 238, 0.05); }
+        .event-gamemaker { border-left-color: var(--purple-400); background: rgba(192, 132, 252, 0.07); }
+        .event-survival { border-left-color: var(--emerald-400); }
+        .event-system { border-left-color: var(--gold-400); background: rgba(245, 158, 11, 0.07); }
+
+        .t-link {
+            color: var(--gold-400);
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: underline dotted rgba(251, 191, 36, 0.5);
+        }
+        .t-link:hover { color: #fff; }
+
+        /* Map & Radar Animations */
+        .radar-wrap {
+            background: radial-gradient(circle at center, #121826 0%, #07090e 100%);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0.6rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        svg#arenaMapSvg {
+            width: 100%;
+            max-width: 370px;
+            height: auto;
+            border-radius: 50%;
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
+        }
+        @keyframes pulseRing {
+            0% { opacity: 0.85; transform: scale(0.98); }
+            50% { opacity: 0.35; transform: scale(1.03); }
+            100% { opacity: 0.85; transform: scale(0.98); }
+        }
+        .map-pulse { transform-origin: center; animation: pulseRing 2s infinite ease-in-out; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Modals & Toast */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 4, 7, 0.82);
+            backdrop-filter: blur(4px);
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-gold);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 620px;
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
+        }
+        .toast-banner {
+            position: fixed;
+            bottom: 1.25rem;
+            right: 1.25rem;
+            background: #181d2c;
+            border: 1px solid var(--gold-500);
+            color: #fff;
+            padding: 0.65rem 1rem;
+            border-radius: 9px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            z-index: 90;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            transition: opacity 0.25s;
+        }
+
+        @media (max-width: 1200px) {
+            .arena-container { grid-template-columns: 1fr; height: auto; }
+            .arena-col { height: auto; min-height: 350px; }
+        }
+        @media (max-width: 860px) {
+            .setup-grid { grid-template-columns: 1fr; }
+            .roster-cards-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+            .top-header { padding: 0.5rem 0.75rem; }
+            .btn { padding: 0.4rem 0.6rem; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- =====================================================================
+         TOP CAPITOL BROADCAST HEADER
+         ===================================================================== -->
+    <header class="top-header flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <div style="width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, #f59e0b, #b45309); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #07080c; font-family: 'Cinzel', serif; font-size: 1.1rem;">76</div>
+            <div>
+                <h1 class="font-display font-bold text-base text-gold" style="letter-spacing: 0.06em;">PANEM GAMEMAKER ARENA COMMAND</h1>
+                <div class="text-xs text-muted">76th Annual Hunger Games &bull; Capitol Tactical Simulation Engine</div>
+            </div>
+        </div>
+
+        <div id="hdrStatusBar" class="status-pill-bar hidden">
+            <span>PHASE: <strong id="hdrPhase" class="text-gold font-mono">BLOODBATH</strong></span>
+            <span class="text-dim">|</span>
+            <span>ALIVE: <strong id="hdrAlive" class="text-emerald font-mono">24</strong> / <span id="hdrTotal" class="font-mono">24</span></span>
+            <span class="text-dim">|</span>
+            <span>CANNONS: <strong id="hdrFallen" class="text-crimson font-mono">0</strong></span>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button id="btnFallenSky" onclick="openFallenModal()" class="btn btn-sm hidden">
+                &#128128; Fallen (<span id="fallenBadge" class="text-crimson font-mono">0</span>)
+            </button>
+            <button id="btnNewRoster" onclick="returnToSetup()" class="btn btn-sm btn-crimson hidden">
+                &#8634; Reaping Setup
+            </button>
+        </div>
+    </header>
+
+    <!-- =====================================================================
+         VIEW 1: THE REAPING & ROSTER BUILDER
+         ===================================================================== -->
+    <main id="setupView" class="setup-container">
+        <div class="panel" style="padding: 0.9rem 1.1rem;">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <div class="font-display font-bold text-sm text-gold">THE REAPING &amp; TRIBUTE ROSTER</div>
+                    <p class="text-xs text-muted" style="margin-top: 2px;">
+                        Enlist friends, historical legends, internet memes, Panem icons, or pop-culture heroes (2 to 48 Tributes).
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="openVaultModal()" class="btn btn-cyan">&#128218; Browse 300+ Character Vault</button>
+                    <button onclick="loadPreset('allStarChaos')" class="btn btn-gold">&#9733; Classic 24 (1M/1F D1-D12)</button>
+                    <button onclick="loadPreset('panem')" class="btn">&#127993; Panem Reaping (24)</button>
+                    <button onclick="loadPreset('historical')" class="btn">&#9876; Historical Reaping (24)</button>
+                    <button onclick="loadPreset('memes')" class="btn">&#128293; Memes Reaping (24)</button>
+                    <button onclick="loadPreset('popCulture')" class="btn">&#127916; Movies/TV Reaping (24)</button>
+                    <button onclick="loadPreset('videoGames')" class="btn">&#127918; Video Games Reaping (24)</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="setup-grid">
+            <!-- Left Column: Custom Enlistment & Arena Settings -->
+            <div class="flex flex-col gap-4">
+                <div class="panel">
+                    <div class="panel-header">
+                        <span id="formHeaderTitle" class="font-display font-bold text-sm text-gold">+ ENLIST CUSTOM TRIBUTE</span>
+                        <div class="flex gap-1">
+                            <button type="button" id="btnCancelEdit" onclick="cancelEditTribute()" class="btn btn-xs btn-crimson hidden">Cancel Edit</button>
+                            <button type="button" onclick="randomizeForm()" class="btn btn-xs">Roll Stats</button>
+                        </div>
+                    </div>
+                    <form id="enlistForm" onsubmit="handleEnlist(event)" style="padding: 1rem;" class="flex flex-col gap-3">
+                        <input type="hidden" id="editTributeId" value="">
+                        <div>
+                            <label class="text-xs text-muted font-bold block" style="margin-bottom: 4px;">TRIBUTE NAME *</label>
+                            <input type="text" id="inpName" required placeholder="e.g. Florida Man, Joan of Arc, Your Friend..." class="w-full">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                            <div>
+                                <label class="text-xs text-muted font-bold block" style="margin-bottom: 4px;">DISTRICT</label>
+                                <select id="inpDistrict" class="w-full">
+                                    <option value="District 1">District 1</option>
+                                    <option value="District 2">District 2</option>
+                                    <option value="District 3">District 3</option>
+                                    <option value="District 4">District 4</option>
+                                    <option value="District 5">District 5</option>
+                                    <option value="District 6">District 6</option>
+                                    <option value="District 7">District 7</option>
+                                    <option value="District 8">District 8</option>
+                                    <option value="District 9">District 9</option>
+                                    <option value="District 10">District 10</option>
+                                    <option value="District 11">District 11</option>
+                                    <option value="District 12" selected>District 12</option>
+                                    <option value="District 13">District 13</option>
+                                    <option value="The Capitol">Capitol</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-muted font-bold block" style="margin-bottom: 4px;">GENDER</label>
+                                <select id="inpGender" class="w-full">
+                                    <option value="Female">Female</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Non-Binary">Non-Binary</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-muted font-bold block" style="margin-bottom: 4px;">CATEGORY</label>
+                                <select id="inpOrigin" class="w-full">
+                                    <option value="Friend / IRL">Friend / IRL</option>
+                                    <option value="Historical">Historical</option>
+                                    <option value="Meme / Internet">Meme / Internet</option>
+                                    <option value="Panem Canon">Panem Canon</option>
+                                    <option value="Movie / TV">Movie / TV</option>
+                                    <option value="Video Game">Video Game</option>
+                                    <option value="Book / Myth">Book / Myth</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Stat Sliders -->
+                        <div class="flex flex-col gap-2" style="background: var(--bg-obsidian); padding: 0.65rem; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                            <div>
+                                <div class="flex justify-between text-xs"><span class="text-muted">Strength (Melee &amp; Heavy Gear)</span><strong id="vStr" class="font-mono text-gold">6</strong></div>
+                                <input type="range" id="sStr" min="1" max="10" value="6" oninput="syncFormStats()" class="w-full">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs"><span class="text-muted">Agility (Speed, Stealth &amp; Dodge)</span><strong id="vAgi" class="font-mono text-gold">6</strong></div>
+                                <input type="range" id="sAgi" min="1" max="10" value="6" oninput="syncFormStats()" class="w-full">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs"><span class="text-muted">Survival IQ (Traps, Foraging &amp; Medicine)</span><strong id="vInt" class="font-mono text-gold">6</strong></div>
+                                <input type="range" id="sInt" min="1" max="10" value="6" oninput="syncFormStats()" class="w-full">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs"><span class="text-muted">Combat Skill (Weapon Mastery)</span><strong id="vCom" class="font-mono text-gold">6</strong></div>
+                                <input type="range" id="sCom" min="1" max="10" value="6" oninput="syncFormStats()" class="w-full">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs"><span class="text-muted">Charisma (Sponsors &amp; Alliances)</span><strong id="vCha" class="font-mono text-gold">6</strong></div>
+                                <input type="range" id="sCha" min="1" max="10" value="6" oninput="syncFormStats()" class="w-full">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btnSubmitTribute" class="btn btn-gold w-full" style="padding: 0.6rem;">+ ADD TRIBUTE TO ARENA</button>
+                    </form>
+                </div>
+
+                <!-- Simulation Parameters & JSON I/O -->
+                <div class="panel" style="padding: 1rem;">
+                    <div class="font-display font-bold text-xs text-gold" style="margin-bottom: 0.65rem;">REAPING RULES, ARENA BIOME & DATA</div>
+                    <div class="flex flex-col gap-3">
+                        <label class="flex items-center justify-between text-xs" style="background: var(--bg-obsidian); padding: 0.5rem 0.65rem; border-radius: 7px; border: 1px solid var(--border-subtle); cursor: pointer;">
+                            <span><strong>Strict Panem Reaping Rule</strong><br><span class="text-dim">Enforce 1 Male &amp; 1 Female per District (D1–D12)</span></span>
+                            <input type="checkbox" id="chkStrictReaping" checked onchange="toggleStrictReaping()" style="width: 16px; height: 16px; accent-color: var(--gold-500);">
+                        </label>
+                        <div>
+                            <div class="flex justify-between text-xs" style="margin-bottom: 3px;">
+                                <span class="text-muted">Arena Environment &amp; Hazard Pool</span>
+                                <strong id="lblArenaBiome" class="font-mono text-cyan">Randomized Arena</strong>
+                            </div>
+                            <select id="sArenaTheme" onchange="updateArenaThemeLabel()" class="w-full">
+                                <option value="random" selected>&#127922; Randomize Arena Every Games</option>
+                                <option value="temperate">74th Arena: Temperate Forest &amp; Lake</option>
+                                <option value="clock">75th Arena: Tropical Poison Clock</option>
+                                <option value="frozen">Tundra: Sub-Zero Blizzard &amp; Ice Caves</option>
+                                <option value="volcanic">Caldera: Ash Wastes &amp; Magma Vents</option>
+                                <option value="ruins">Sunken Capitol: Flooded Skyscraper Ruins</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs" style="margin-bottom: 3px;">
+                                <span class="text-muted">Arena Pacing &amp; Bloodbath Lethality</span>
+                                <strong id="lblLethality" class="font-mono text-crimson">Movie Canon (~50% Bloodbath)</strong>
+                            </div>
+                            <select id="sLethality" onchange="updateLethality()" class="w-full">
+                                <option value="standard" selected>Movie / Book Canon (~50% Bloodbath Mortality)</option>
+                                <option value="brutal">Brutal Massacre (~65% Bloodbath + Fast Endgame)</option>
+                                <option value="slow">Slow Burn (~25% Bloodbath + Extended Survival)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-muted">Upset / Chaos Factor</span>
+                                <strong id="lblChaos" class="font-mono text-gold">35% (Balanced)</strong>
+                            </div>
+                            <input type="range" id="sChaos" min="5" max="80" value="35" oninput="updateChaos()" class="w-full">
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="autoFillRoster(24)" class="btn btn-sm" style="flex: 1;">Auto-Fill to 24</button>
+                            <button onclick="exportRosterJSON()" class="btn btn-sm">Export JSON</button>
+                            <label class="btn btn-sm" style="cursor: pointer;">
+                                Import JSON
+                                <input type="file" accept=".json" onchange="importRosterJSON(event)" class="hidden">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Active Roster Grid -->
+            <div class="panel" style="padding: 1rem;">
+                <div class="flex flex-wrap items-center justify-between gap-3" style="padding-bottom: 0.85rem; margin-bottom: 0.85rem; border-bottom: 1px solid var(--border-subtle);">
+                    <div>
+                        <h2 class="font-display font-bold text-base">ENLISTED TRIBUTES (<span id="lblRosterCount" class="text-gold">0</span>)</h2>
+                        <p id="lblReapingRuleHint" class="text-xs text-muted">Strict Reaping Active: 1 Male &amp; 1 Female per District (1–12). Click &#9998; on any card to edit.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="clearRoster()" class="btn btn-crimson btn-sm">Clear All</button>
+                        <button onclick="launchHungerGames()" class="btn btn-gold" style="padding: 0.55rem 1.2rem; font-size: 0.85rem;">
+                            &#9654; LAUNCH THE 76TH HUNGER GAMES
+                        </button>
+                    </div>
+                </div>
+
+                <div id="setupRosterGrid" class="roster-cards-grid"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- =====================================================================
+         VIEW 2: LIVE ARENA 3-COLUMN GAMEMAKER COMMAND CENTER
+         ===================================================================== -->
+    <main id="arenaView" class="arena-container hidden">
+        <!-- LEFT COLUMN: TRIBUTE VITALS & INVENTORY -->
+        <section class="panel arena-col">
+            <div class="panel-header">
+                <span class="font-display font-bold text-xs text-gold">TRIBUTE VITALS &amp; GEAR</span>
+                <select id="vitalsFilter" onchange="renderVitalsSidebar()" style="padding: 0.2rem 0.45rem; font-size: 0.72rem;">
+                    <option value="alive">Alive Only</option>
+                    <option value="all">All Tributes</option>
+                    <option value="dead">Fallen Only</option>
+                </select>
+            </div>
+            <div id="vitalsList" class="scroll-body"></div>
+        </section>
+
+        <!-- CENTER COLUMN: PHASE CONTROLS, GAMEMAKER SUITE & EVENT LOG -->
+        <section class="panel arena-col">
+            <div class="panel-header" style="flex-wrap: wrap;">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span id="badgePhaseType" class="badge badge-gold">BLOODBATH</span>
+                        <span id="badgeArenaWeather" class="badge badge-cyan">ARENA</span>
+                    </div>
+                    <h2 id="lblPhaseHeadline" class="font-display font-bold text-base" style="margin-top: 3px;">Day 1 — The Cornucopia Bloodbath</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="btnRewind" onclick="rewindPhase()" disabled class="btn btn-sm" title="Rewind to previous phase">&#9194; Rewind</button>
+                    <button id="btnAutoPlay" onclick="toggleAutoPlay()" class="btn btn-sm btn-cyan">&#9654; Auto-Sim</button>
+                    <button id="btnProceed" onclick="proceedNextPhase()" class="btn btn-gold btn-sm">PROCEED &#9654;</button>
+                </div>
+            </div>
+
+            <!-- GAMEMAKER LIVE INTERVENTION CONSOLE -->
+            <div style="padding: 0.55rem 0.85rem; background: #0c0e15; border-bottom: 1px solid var(--border-subtle);">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="font-mono text-xs text-purple font-bold">&#9881; GAMEMAKER INTERVENTIONS:</span>
+                    <div class="flex flex-wrap items-center gap-1">
+                        <select id="liveLethalitySel" onchange="setLiveLethality(this.value)" style="padding: 0.16rem 0.35rem; font-size: 0.68rem;" title="Adjust live arena lethality">
+                            <option value="standard">Pacing: Movie Canon</option>
+                            <option value="brutal">Pacing: Brutal</option>
+                            <option value="slow">Pacing: Slow Burn</option>
+                        </select>
+                        <button onclick="openGamemakerActionModal('sponsor')" class="btn btn-xs btn-gold">&#129666; Sponsor Gift</button>
+                        <button onclick="openGamemakerActionModal('encounter')" class="btn btn-xs btn-cyan">&#9876; Force Duel/Pact</button>
+                        <button onclick="openGamemakerActionModal('hazard')" class="btn btn-xs btn-crimson">&#128293; Trigger Hazard</button>
+                        <button onclick="openGamemakerActionModal('airdrop')" class="btn btn-xs">&#128230; Zone Air-Drop</button>
+                        <button onclick="openGamemakerActionModal('herd')" class="btn btn-xs">&#129522; Herd Tributes</button>
+                        <button onclick="triggerManualFeast()" class="btn btn-xs">&#127869; Feast</button>
+                    </div>
+                </div>
+                <!-- Interactive Audience / Gamemaker Quick Dilemma Banner -->
+                <div id="interactivePromptBar" class="hidden" style="margin-top: 0.5rem; padding: 0.5rem 0.7rem; background: rgba(245, 158, 11, 0.12); border: 1px solid var(--border-gold); border-radius: 8px;"></div>
+            </div>
+
+            <!-- Event Category Filter Bar -->
+            <div class="flex items-center gap-1" style="padding: 0.45rem 0.85rem; border-bottom: 1px solid var(--border-subtle); background: rgba(255,255,255,0.015);">
+                <button onclick="setLogFilter('all')" id="flt-all" class="btn btn-xs btn-gold">All Events</button>
+                <button onclick="setLogFilter('combat')" id="flt-combat" class="btn btn-xs">Combat &amp; Kills</button>
+                <button onclick="setLogFilter('alliance')" id="flt-alliance" class="btn btn-xs">Alliances &amp; Betrayals</button>
+                <button onclick="setLogFilter('survival')" id="flt-survival" class="btn btn-xs">Loot &amp; Survival</button>
+                <button onclick="setLogFilter('gamemaker')" id="flt-gamemaker" class="btn btn-xs">Gamemaker &amp; Sponsors</button>
+            </div>
+
+            <div id="eventLogFeed" class="scroll-body"></div>
+        </section>
+
+        <!-- RIGHT COLUMN: TACTICAL ARENA RADAR MAP & INSPECTOR -->
+        <section class="panel arena-col">
+            <div class="panel-header">
+                <span class="font-display font-bold text-xs text-gold">TACTICAL ARENA RADAR MAP</span>
+                <select id="mapHighlightSelect" onchange="renderArenaMap()" style="padding: 0.2rem 0.45rem; font-size: 0.72rem;">
+                    <option value="all">Show All Tributes</option>
+                    <option value="alliances">Highlight Alliances</option>
+                    <option value="armed">Highlight Armed</option>
+                    <option value="wounded">Highlight Critical HP</option>
+                </select>
+            </div>
+
+            <div class="radar-wrap">
+                <svg id="arenaMapSvg" viewBox="0 0 500 500">
+                    <defs>
+                        <radialGradient id="cornucopiaGrad" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="rgba(245, 158, 11, 0.35)" />
+                            <stop offset="100%" stop-color="rgba(245, 158, 11, 0.03)" />
+                        </radialGradient>
+                    </defs>
+
+                    <!-- Concentric Radar Rings & Crosshairs -->
+                    <circle cx="250" cy="250" r="232" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1" />
+                    <circle cx="250" cy="250" r="165" fill="none" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4 4" />
+                    <circle cx="250" cy="250" r="105" fill="none" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 3" />
+                    <line x1="250" y1="15" x2="250" y2="485" stroke="rgba(255,255,255,0.05)" />
+                    <line x1="15" y1="250" x2="485" y2="250" stroke="rgba(255,255,255,0.05)" />
+
+                    <!-- Center: The Golden Cornucopia -->
+                    <circle cx="250" cy="250" r="56" fill="url(#cornucopiaGrad)" stroke="rgba(245, 158, 11, 0.5)" stroke-width="1.5" />
+                    <polygon points="250,232 266,262 234,262" fill="rgba(251, 191, 36, 0.65)" stroke="#fbbf24" stroke-width="1" />
+
+                    <!-- Zone Labels (Dynamically updated per randomized arena theme) -->
+                    <text id="mapLblNorth" x="250" y="38" text-anchor="middle" fill="#34d399" font-size="10" font-family="monospace" font-weight="bold" opacity="0.85">WHISPERING WOODS</text>
+                    <text id="mapLblEast" x="428" y="253" text-anchor="middle" fill="#22d3ee" font-size="10" font-family="monospace" font-weight="bold" opacity="0.85" transform="rotate(90 428 253)">POISON LAKE &amp; RIVER</text>
+                    <text id="mapLblSouth" x="250" y="472" text-anchor="middle" fill="#f87171" font-size="10" font-family="monospace" font-weight="bold" opacity="0.85">SCORCHED RIDGE / MUTT CAVES</text>
+                    <text id="mapLblWest" x="68" y="253" text-anchor="middle" fill="#c084fc" font-size="10" font-family="monospace" font-weight="bold" opacity="0.85" transform="rotate(-90 68 253)">MOCKINGJAY RUINS</text>
+                    <text id="mapLblCenter" x="250" y="276" text-anchor="middle" fill="#fbbf24" font-size="9" font-family="monospace" font-weight="bold">CORNUCOPIA</text>
+
+                    <!-- Dynamic Layers populated by JS -->
+                    <g id="mapHazardLayer"></g>
+                    <g id="mapSupplyDropLayer"></g>
+                    <g id="mapAllianceLayer"></g>
+                    <g id="mapFallenLayer"></g>
+                    <g id="mapTributeLayer"></g>
+                </svg>
+            </div>
+
+            <!-- Selected Tribute Tactical Inspector -->
+            <div id="mapInspectorBox" class="scroll-body" style="background: var(--bg-panel);">
+                <div class="text-xs text-muted" style="text-align: center; padding: 1.5rem;">
+                    Click any tribute marker on the radar or sidebar to inspect their gear, provenance, and relationship matrix.
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- =====================================================================
+         MODALS (TRIBUTE DOSSIER, GAMEMAKER OVERRIDES, FALLEN MEMORIAL)
+         ===================================================================== -->
+    <div id="dossierModal" class="modal-backdrop hidden" onclick="if(event.target===this) closeModal('dossierModal')">
+        <div class="modal-box">
+            <div class="panel-header">
+                <span id="dossierTitle" class="font-display font-bold text-base text-gold">TRIBUTE DOSSIER</span>
+                <button onclick="closeModal('dossierModal')" class="btn btn-xs btn-crimson">&#10005; Close</button>
+            </div>
+            <div id="dossierBody" class="scroll-body"></div>
+        </div>
+    </div>
+
+    <div id="gmActionModal" class="modal-backdrop hidden" onclick="if(event.target===this) closeModal('gmActionModal')">
+        <div class="modal-box" style="max-width: 440px;">
+            <div class="panel-header">
+                <span id="gmModalTitle" class="font-display font-bold text-sm text-gold">GAMEMAKER DIRECTIVE</span>
+                <button onclick="closeModal('gmActionModal')" class="btn btn-xs btn-crimson">&#10005;</button>
+            </div>
+            <div id="gmModalBody" style="padding: 1rem;" class="flex flex-col gap-3"></div>
+        </div>
+    </div>
+
+    <div id="fallenModal" class="modal-backdrop hidden" onclick="if(event.target===this) closeModal('fallenModal')">
+        <div class="modal-box">
+            <div class="panel-header">
+                <span class="font-display font-bold text-base text-crimson">&#128128; THE FALLEN — CAPITOL NIGHT SKY PROJECTION</span>
+                <button onclick="closeModal('fallenModal')" class="btn btn-xs">&#10005; Close</button>
+            </div>
+            <div id="fallenBody" class="scroll-body"></div>
+        </div>
+    </div>
+
+    <!-- CHARACTER VAULT BROWSER MODAL (300+ CHARACTERS) -->
+    <div id="vaultModal" class="modal-backdrop hidden" onclick="if(event.target===this) closeModal('vaultModal')">
+        <div class="modal-box" style="max-width: 860px;">
+            <div class="panel-header">
+                <span class="font-display font-bold text-base text-cyan">&#128218; CAPITOL ARCHIVE: 300+ DEFAULT CHARACTERS VAULT</span>
+                <button onclick="closeModal('vaultModal')" class="btn btn-xs btn-crimson">&#10005; Close</button>
+            </div>
+            <div style="padding: 0.75rem 1rem; background: #0c0e15; border-bottom: 1px solid var(--border-subtle);" class="flex flex-wrap items-center gap-2">
+                <input type="text" id="vaultSearchInput" oninput="renderVaultGrid()" placeholder="Search 300+ characters by name, district, or lore..." style="flex: 1; min-width: 200px;">
+                <select id="vaultCatFilter" onchange="renderVaultGrid()">
+                    <option value="ALL">All Categories (<span id="vaultTotalBadge">300+</span>)</option>
+                    <option value="panem">Panem Canon (74th, 75th, 50th, 10th Games)</option>
+                    <option value="historical">Historical Legends</option>
+                    <option value="memes">Internet &amp; Memes</option>
+                    <option value="popCulture">Movies, TV &amp; Books</option>
+                    <option value="videoGames">Video Games</option>
+                </select>
+                <select id="vaultGenFilter" onchange="renderVaultGrid()">
+                    <option value="ALL">Any Gender</option>
+                    <option value="Male">Male Only</option>
+                    <option value="Female">Female Only</option>
+                </select>
+            </div>
+            <div id="vaultGridBody" class="scroll-body" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(245px, 1fr)); gap: 0.65rem;"></div>
+        </div>
+    </div>
+
+    <div id="toastBanner" class="toast-banner hidden"></div>
+
+    <!-- =====================================================================
+         APPLICATION LOGIC & SIMULATION ENGINE
+         ===================================================================== -->
+    <script>
+        // Toast notification helper
+        function toast(msg) {
+            const t = document.getElementById("toastBanner");
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.remove("hidden");
+            t.style.opacity = "1";
+            setTimeout(() => {
+                t.style.opacity = "0";
+                setTimeout(() => t.classList.add("hidden"), 250);
+            }, 3000);
+        }
+
+        // Modal closer helper
+        function closeModal(modalId) {
+            const m = document.getElementById(modalId);
+            if (m) m.classList.add("hidden");
+        }
+
+        function returnToSetup() {
+            if (state.autoTimer) clearInterval(state.autoTimer);
+            document.getElementById("arenaView").classList.add("hidden");
+            document.getElementById("setupView").classList.remove("hidden");
+            document.getElementById("hdrStatusBar").classList.add("hidden");
+            document.getElementById("btnFallenSky").classList.add("hidden");
+            document.getElementById("btnNewRoster").classList.add("hidden");
+            toast("Returned to Reaping setup.");
+        }
+
+        // =====================================================================
+        // MASSIVE 300+ CHARACTER DATABASE (PANEM CANON + 4 EXPANDED CATEGORIES)
+        // =====================================================================
+        const RAW_PANEM_CANON = [
+            // 74th Hunger Games Complete Roster
+            ["Marvel","District 1","Male",8,8,6,8,7],["Glimmer","District 1","Female",6,7,6,7,9],
+            ["Cato","District 2","Male",10,6,5,9,6],["Clove","District 2","Female",6,9,7,9,5],
+            ["District 3 Boy (74th)","District 3","Male",5,6,9,6,5],["District 3 Girl (74th)","District 3","Female",4,7,8,5,5],
+            ["District 4 Boy (74th)","District 4","Male",8,7,6,8,6],["Marina (D4 74th)","District 4","Female",6,8,6,7,7],
+            ["District 5 Boy (74th)","District 5","Male",6,6,7,6,5],["Foxface","District 5","Female",4,9,10,4,6],
+            ["Jason","District 6","Male",6,7,6,6,5],["District 6 Girl (74th)","District 6","Female",5,7,6,5,6],
+            ["District 7 Boy (74th)","District 7","Male",7,6,6,7,5],["District 7 Girl (74th)","District 7","Female",6,7,6,6,5],
+            ["District 8 Boy (74th)","District 8","Male",6,6,6,6,5],["District 8 Girl (74th)","District 8","Female",5,6,7,5,6],
+            ["Rye","District 9","Male",7,6,6,6,6],["Demetria","District 9","Female",6,7,6,6,6],
+            ["District 10 Boy (74th)","District 10","Male",8,6,7,7,5],["District 10 Girl (74th)","District 10","Female",6,7,6,6,6],
+            ["Thresh","District 11","Male",10,7,7,8,5],["Rue","District 11","Female",3,10,9,4,9],
+            ["Peeta Mellark","District 12","Male",8,4,7,5,10],["Katniss Everdeen","District 12","Female",6,9,9,9,8],
+            // 75th Quarter Quell Victors
+            ["Gloss","District 1","Male",9,8,7,9,8],["Cashmere","District 1","Female",7,8,7,9,9],
+            ["Brutus","District 2","Male",10,6,6,10,6],["Enobaria","District 2","Female",8,8,7,10,6],
+            ["Beetee Latier","District 3","Male",4,4,10,4,7],["Wiress","District 3","Female",3,6,10,3,6],
+            ["Finnick Odair","District 4","Male",8,9,8,10,10],["Mags Flanagan","District 4","Female",2,3,10,3,10],
+            ["Porter Millicent Tripp","District 5","Female",5,6,7,6,6],["Male Morphling","District 6","Male",5,6,8,4,6],
+            ["Female Morphling","District 6","Female",4,7,8,4,6],["Blight","District 7","Male",8,6,6,7,5],
+            ["Johanna Mason","District 7","Female",7,8,9,9,6],["Woof","District 8","Male",5,4,7,5,5],
+            ["Cecelia","District 8","Female",6,7,8,6,9],["District 9 Male Victor","District 9","Male",7,6,6,7,6],
+            ["District 9 Female Victor","District 9","Female",6,7,6,6,6],["District 10 Male Victor","District 10","Male",8,6,7,7,6],
+            ["District 10 Female Victor","District 10","Female",7,7,6,7,6],["Chaff","District 11","Male",8,6,7,8,8],
+            ["Seeder","District 11","Female",6,6,8,6,8],["Haymitch Abernathy","District 12","Male",7,6,9,8,8],
+            // Sunrise on the Reaping (50th Quarter Quell) & Mockingjay / Rebellion
+            ["Panache Barker","District 1","Male",9,7,6,8,7],["Silka Sharp","District 1","Female",7,8,7,8,7],
+            ["Maysilee Donner","District 12","Female",5,8,9,7,8],["Wyatt Callow","District 12","Male",6,7,9,6,6],
+            ["Louella McCoy","District 12","Female",4,9,8,5,8],["Ampert Latier","District 3","Male",4,7,10,5,7],
+            ["Wellie","District 6","Female",4,8,8,5,7],["Gale Hawthorne","District 12","Male",8,8,9,8,7],
+            ["Primrose Everdeen","District 12","Female",3,7,9,3,9],["Annie Cresta","District 4","Female",5,8,7,6,8],
+            ["Boggs","District 13","Male",8,7,9,9,8],["Cressida","The Capitol","Female",5,7,8,5,9],
+            ["Pollux","The Capitol","Male",7,8,8,7,7],["Castor","The Capitol","Male",6,7,8,6,7],
+            ["Alma Coin","District 13","Female",5,5,10,5,7],["Coriolanus Snow","The Capitol","Male",5,5,10,5,9],
+            ["Plutarch Heavensbee","The Capitol","Male",4,4,10,4,9],["Effie Trinket","The Capitol","Female",3,5,6,3,9],
+            ["Cinna","The Capitol","Male",5,6,9,5,10],["Caesar Flickerman","The Capitol","Male",4,5,7,4,10],
+            ["Tigris","The Capitol","Female",4,6,8,4,8],["Dalton","District 10","Male",8,6,7,7,6],
+            ["Bonnie","District 8","Female",5,7,7,5,7],["Twill","District 8","Female",5,6,8,5,7],
+            // Ballad of Songbirds and Snakes (10th Hunger Games)
+            ["Facet","District 1","Male",8,8,6,8,7],["Velvereen","District 1","Female",7,8,6,8,7],
+            ["Marcus","District 2","Male",9,7,6,9,6],["Sabyn","District 2","Female",7,8,6,8,6],
+            ["Circ","District 3","Male",5,6,9,5,6],["Teslee","District 3","Female",4,7,10,5,6],
+            ["Mizzen","District 4","Male",7,8,6,8,6],["Coral","District 4","Female",8,8,7,9,6],
+            ["Hy","District 5","Male",5,6,7,5,6],["Sol","District 5","Female",5,7,7,5,6],
+            ["Otto","District 6","Male",6,6,6,6,5],["Ginnee","District 6","Female",5,7,6,5,5],
+            ["Treech","District 7","Male",8,8,8,8,6],["Lamina","District 7","Female",7,8,7,8,6],
+            ["Bobbin","District 8","Male",6,6,6,6,5],["Wovey","District 8","Female",3,7,6,3,8],
+            ["Panlo","District 9","Male",6,6,6,6,5],["Sheaf","District 9","Female",5,6,6,5,5],
+            ["Tanner","District 10","Male",8,7,6,8,6],["Brandy","District 10","Female",7,7,6,7,6],
+            ["Reaper Ash","District 11","Male",10,7,7,8,6],["Dill","District 11","Female",3,6,6,3,7],
+            ["Jessup Diggs","District 12","Male",8,6,6,7,6],["Lucy Gray Baird","District 12","Female",4,9,9,5,10]
+        ];
+
+        const RAW_HISTORICAL = [
+            ["Julius Caesar","District 1","Male",7,7,9,8,10],["Cleopatra","District 1","Female",4,6,10,5,10],
+            ["Alexander the Great","District 1","Male",8,8,9,9,10],["Empress Wu Zetian","District 1","Female",5,6,10,6,9],
+            ["Miyamoto Musashi","District 2","Male",8,9,9,10,6],["Tomoe Gozen","District 2","Female",8,9,8,10,7],
+            ["Leonidas I","District 2","Male",9,7,8,10,8],["Artemisia I of Caria","District 2","Female",6,8,9,8,9],
+            ["Leonardo da Vinci","District 3","Male",5,6,10,5,8],["Ada Lovelace","District 3","Female",4,6,10,4,8],
+            ["Archimedes","District 3","Male",4,5,10,4,7],["Hypatia of Alexandria","District 3","Female",4,5,10,4,8],
+            ["Blackbeard","District 4","Male",9,6,7,9,8],["Zheng Yi Sao","District 4","Female",6,8,10,8,9],
+            ["Anne Bonny","District 4","Female",7,8,7,8,8],["Francis Drake","District 4","Male",7,7,8,8,8],
+            ["Nikola Tesla","District 5","Male",4,5,10,4,7],["Marie Curie","District 5","Female",4,5,10,4,7],
+            ["Albert Einstein","District 5","Male",4,5,10,4,8],["Rosalind Franklin","District 5","Female",4,6,10,4,7],
+            ["Marco Polo","District 6","Male",6,7,9,6,8],["Amelia Earhart","District 6","Female",5,8,8,6,9],
+            ["Ernest Shackleton","District 6","Male",8,6,9,7,9],["Nellie Bly","District 6","Female",5,8,9,5,9],
+            ["Teddy Roosevelt","District 7","Male",9,6,8,8,9],["Sacagawea","District 7","Female",6,9,10,6,8],
+            ["Davy Crockett","District 7","Male",8,7,8,8,8],["Annie Oakley","District 7","Female",5,9,8,9,8],
+            ["Napoleon Bonaparte","District 8","Male",6,7,10,8,9],["Catherine the Great","District 8","Female",5,6,9,6,10],
+            ["Queen Elizabeth I","District 8","Female",4,5,10,4,10],["Otto von Bismarck","District 8","Male",7,5,10,6,8],
+            ["Spartacus","District 9","Male",9,8,7,10,8],["Boudica","District 9","Female",8,7,8,9,9],
+            ["William Wallace","District 9","Male",9,7,7,9,8],["Zenobia","District 9","Female",6,7,9,7,9],
+            ["Genghis Khan","District 10","Male",9,8,9,9,8],["Khutulun","District 10","Female",9,8,8,9,7],
+            ["Attila the Hun","District 10","Male",8,8,8,9,7],["Tomyris","District 10","Female",8,8,9,9,8],
+            ["Hannibal Barca","District 11","Male",8,7,10,8,8],["Joan of Arc","District 11","Female",7,7,8,8,10],
+            ["Sun Tzu","District 11","Male",5,7,10,7,8],["Lakshmibai of Jhansi","District 11","Female",7,8,8,9,9],
+            ["Abraham Lincoln","District 12","Male",8,6,9,7,9],["Harriet Tubman","District 12","Female",6,9,10,7,9],
+            ["Vlad the Impaler","District 2","Male",8,7,8,9,6],["Grigori Rasputin","District 12","Male",8,5,7,6,9],
+            ["Florence Nightingale","District 8","Female",4,6,10,4,9],["Simo Hayha (White Death)","District 7","Male",6,9,9,10,5]
+        ];
+
+        const RAW_MEMES = [
+            ["GigaChad","District 1","Male",10,7,7,9,10],["Lady Dimitrescu","District 1","Female",9,6,8,8,9],
+            ["Sigma Patrick Bateman","District 1","Male",7,7,8,7,8],["Belle Delphine","District 1","Female",4,7,8,4,10],
+            ["Chuck Norris","District 2","Male",10,9,8,10,8],["Karen (Manager Seeker)","District 2","Female",6,7,6,8,4],
+            ["John Cena (Invisible)","District 2","Male",10,8,6,9,9],["She-Hulk Twerking","District 2","Female",9,7,7,8,7],
+            ["MatPat (Game Theory)","District 3","Male",4,6,10,4,9],["Hatsune Miku","District 3","Female",5,9,8,6,10],
+            ["Mark Zuckerberg (Lizard)","District 3","Male",5,7,10,6,4],["GLaDOS","District 3","Female",6,5,10,8,7],
+            ["Florida Man","District 4","Male",8,8,3,8,7],["Vaporeon","District 4","Female",6,9,7,7,8],
+            ["Blahaj the Shark","District 4","Male",7,8,6,7,10],["Ocean Man","District 4","Male",7,8,6,7,9],
+            ["MrBeast","District 5","Male",5,6,8,4,10],["Nyan Cat","District 5","Female",3,10,5,4,9],
+            ["Elon Musk","District 5","Male",5,5,9,4,7],["Pokimane","District 5","Female",4,7,7,4,9],
+            ["Sanic Hegehog","District 6","Male",5,10,4,6,7],["Overly Attached Girlfriend","District 6","Female",5,8,7,7,6],
+            ["Thomas the Tank Engine","District 6","Male",10,6,5,8,7],["Lightning McQueen","District 6","Male",7,10,6,6,9],
+            ["Bob Ross","District 7","Male",5,6,8,5,10],["Dora the Explorer","District 7","Female",5,8,9,5,8],
+            ["Steve (Minecraft)","District 7","Male",10,7,8,8,6],["Alex (Minecraft)","District 7","Female",9,8,8,8,6],
+            ["Rick Astley","District 8","Male",5,7,7,5,10],["Disaster Girl","District 8","Female",4,8,9,6,7],
+            ["Hide the Pain Harold","District 8","Male",4,5,8,4,9],["Grumpy Cat","District 8","Female",4,7,7,5,8],
+            ["Shaggy (2% Power)","District 9","Male",7,10,6,8,8],["Velma Dinkley","District 9","Female",4,6,10,4,7],
+            ["Big Chungus","District 9","Male",9,5,6,7,9],["Ugandan Knuckles","District 9","Male",5,9,4,6,8],
+            ["Gordon Ramsay","District 10","Male",7,6,8,7,8],["Doge","District 10","Female",4,10,6,5,10],
+            ["Cheems","District 10","Male",4,8,6,4,9],["Harambe","District 10","Male",10,7,7,8,10],
+            ["Shrek","District 11","Male",10,6,7,8,8],["Princess Fiona","District 11","Female",8,9,7,9,8],
+            ["Kermit the Frog","District 11","Male",4,8,7,4,10],["Pepe the Frog","District 11","Male",4,7,7,4,9],
+            ["Keanu Reeves","District 12","Male",8,8,8,9,10],["Wednesday Addams","District 12","Female",4,7,10,7,5],
+            ["Waldo (Where's Waldo)","District 12","Male",4,10,9,4,7],["Skibidi Toilet","District 12","Male",6,7,4,6,6],
+            ["Phil Swift (Flex Tape)","District 3","Male",8,6,8,6,10],["Danny DeVito","District 12","Male",6,6,8,6,10]
+        ];
+
+        const RAW_POP_CULTURE = [
+            ["Tony Stark","District 1","Male",6,7,10,7,10],["Buffy Summers","District 1","Female",9,9,6,9,8],
+            ["Jaime Lannister","District 1","Male",8,8,7,9,8],["Daenerys Targaryen","District 1","Female",4,6,8,5,10],
+            ["John Wick","District 2","Male",8,8,8,10,6],["Furiosa","District 2","Female",8,8,8,9,6],
+            ["Darth Vader","District 2","Male",10,6,8,10,7],["Wonder Woman","District 2","Female",10,9,8,10,9],
+            ["Walter White","District 3","Male",4,4,10,5,6],["Hermione Granger","District 3","Female",4,6,10,6,8],
+            ["Spock","District 3","Male",7,6,10,7,6],["Princess Leia","District 3","Female",5,7,9,7,10],
+            ["Jack Sparrow","District 4","Male",6,8,8,7,9],["Moana","District 4","Female",6,8,8,6,9],
+            ["Aquaman","District 4","Male",9,8,6,9,8],["Percy Jackson","District 4","Male",7,8,7,9,8],
+            ["Doc Brown","District 5","Male",4,5,10,4,8],["Ellen Ripley","District 5","Female",7,7,9,8,7],
+            ["Rick Sanchez","District 5","Male",5,7,10,7,6],["Sarah Connor","District 5","Female",7,8,8,9,6],
+            ["Din Djarin (Mando)","District 6","Male",8,7,7,9,6],["Rey Skywalker","District 6","Female",7,8,7,8,8],
+            ["Han Solo","District 6","Male",6,8,8,7,9],["Ahsoka Tano","District 6","Female",7,10,8,10,8],
+            ["Aragorn","District 7","Male",9,8,9,10,9],["Tauriel","District 7","Female",7,10,8,9,7],
+            ["Robin Hood","District 7","Male",6,9,8,9,9],["Merida","District 7","Female",5,9,7,9,8],
+            ["Sherlock Holmes","District 8","Male",6,7,10,7,7],["Black Widow","District 8","Female",6,10,9,9,8],
+            ["James Bond","District 8","Male",7,8,8,9,10],["Beatrix Kiddo (The Bride)","District 8","Female",7,9,8,10,6],
+            ["Legolas","District 9","Male",7,10,8,10,8],["Mulan","District 9","Female",7,8,9,9,8],
+            ["Jon Snow","District 9","Male",8,8,7,9,8],["Brienne of Tarth","District 9","Female",9,7,7,9,7],
+            ["Indiana Jones","District 10","Male",7,7,9,8,8],["Princess Mononoke","District 10","Female",7,10,8,9,6],
+            ["Wolverine","District 10","Male",9,8,7,10,6],["Xena Warrior Princess","District 10","Female",8,9,8,10,8],
+            ["Tarzan","District 11","Male",9,10,7,8,7],["Poison Ivy","District 11","Female",5,7,10,6,9],
+            ["Harry Potter","District 11","Male",5,8,7,7,9],["Violet Baudelaire","District 11","Female",4,7,10,5,7],
+            ["Batman","District 12","Male",8,9,10,10,6],["Arya Stark","District 12","Female",5,10,8,9,6],
+            ["Luke Skywalker","District 12","Male",7,8,8,9,8],["Eleven (Stranger Things)","District 12","Female",5,7,7,9,6],
+            ["Gandalf","District 3","Male",6,6,10,8,9],["Maximus Decimus Meridius","District 2","Male",9,8,8,10,9]
+        ];
+
+        const RAW_VIDEO_GAMES = [
+            ["Ezio Auditore","District 1","Male",7,10,8,9,9],["Bayonetta","District 1","Female",8,10,8,10,9],
+            ["Dante (Devil May Cry)","District 1","Male",9,10,7,10,9],["2B (NieR)","District 1","Female",9,10,8,10,6],
+            ["Kratos","District 2","Male",10,7,7,10,4],["Kassandra","District 2","Female",8,9,8,9,8],
+            ["Doom Slayer","District 2","Male",10,8,6,10,3],["Chun-Li","District 2","Female",7,10,7,9,8],
+            ["Gordon Freeman","District 3","Male",6,7,10,8,6],["Chell (Portal)","District 3","Female",5,8,10,6,5],
+            ["Commander Shepard","District 3","Male",8,8,8,9,9],["Tali'Zorah","District 3","Female",4,8,10,6,8],
+            ["Edward Kenway","District 4","Male",7,9,7,9,8],["Jaina Proudmoore","District 4","Female",4,6,10,7,8],
+            ["Guybrush Threepwood","District 4","Male",5,7,8,5,9],["Sidon (Zelda)","District 4","Male",8,8,7,8,10],
+            ["Master Chief","District 5","Male",10,8,8,10,7],["Samus Aran","District 5","Female",8,9,9,10,6],
+            ["Isaac Clarke","District 5","Male",7,6,10,8,5],["Cortana","District 5","Female",3,8,10,5,9],
+            ["Cloud Strife","District 6","Male",9,8,7,9,7],["Tifa Lockhart","District 6","Female",8,9,7,9,9],
+            ["Captain Falcon","District 6","Male",8,9,6,8,9],["Tracer","District 6","Female",4,10,7,7,9],
+            ["Link","District 7","Male",7,9,8,9,8],["Lara Croft","District 7","Female",6,9,9,8,8],
+            ["Nathan Drake","District 7","Male",7,8,8,7,9],["Aloy","District 7","Female",6,9,10,9,7],
+            ["Solid Snake","District 8","Male",8,9,9,9,6],["Jill Valentine","District 8","Female",6,8,8,9,7],
+            ["Leon S. Kennedy","District 8","Male",7,8,8,9,8],["Ada Wong","District 8","Female",6,9,9,9,8],
+            ["Geralt of Rivia","District 9","Male",9,8,9,10,6],["Ciri","District 9","Female",7,10,8,9,8],
+            ["Yennefer of Vengerberg","District 9","Female",4,7,10,7,8],["Solaire of Astora","District 9","Male",8,7,7,8,10],
+            ["Arthur Morgan","District 10","Male",8,6,7,9,8],["Sadie Adler","District 10","Female",7,8,7,9,7],
+            ["John Marston","District 10","Male",8,7,7,9,7],["Chloe Frazer","District 10","Female",6,9,8,7,8],
+            ["Jin Sakai","District 11","Male",8,9,8,10,7],["Princess Zelda","District 11","Female",4,7,10,6,9],
+            ["Mario","District 11","Male",7,9,7,7,9],["Peach","District 11","Female",5,8,8,6,10],
+            ["Joel Miller","District 12","Male",8,6,8,8,5],["Ellie Williams","District 12","Female",5,9,8,8,6],
+            ["Sans (Undertale)","District 12","Male",2,10,10,8,9],["Malenia, Blade of Miquella","District 2","Female",9,10,8,10,6],
+            ["Sephiroth","District 1","Male",9,9,9,10,8],["Trevor Philips","District 12","Male",8,7,5,8,4]
+        ];
+
+        function expandRosterTuples(tuples, originLabel) {
+            return tuples.map(r => ({
+                name: r[0], district: r[1], gender: r[2], origin: originLabel,
+                str: r[3], agi: r[4], int: r[5], com: r[6], cha: r[7]
+            }));
+        }
+
+        const PRESETS = {
+            panem: expandRosterTuples(RAW_PANEM_CANON, "Panem Canon"),
+            historical: expandRosterTuples(RAW_HISTORICAL, "Historical"),
+            memes: expandRosterTuples(RAW_MEMES, "Meme / Internet"),
+            popCulture: expandRosterTuples(RAW_POP_CULTURE, "Movie / TV"),
+            videoGames: expandRosterTuples(RAW_VIDEO_GAMES, "Video Game")
+        };
+
+        const ALL_VAULT_CHARACTERS = [
+            ...PRESETS.panem.map(c => ({ ...c, catKey: "panem" })),
+            ...PRESETS.historical.map(c => ({ ...c, catKey: "historical" })),
+            ...PRESETS.memes.map(c => ({ ...c, catKey: "memes" })),
+            ...PRESETS.popCulture.map(c => ({ ...c, catKey: "popCulture" })),
+            ...PRESETS.videoGames.map(c => ({ ...c, catKey: "videoGames" }))
+        ];
+
+        // Global Application State
+        let state = {
+            roster: [],
+            tributes: [],
+            relationships: {},
+            day: 1,
+            phaseType: "Bloodbath",
+            logs: [],
+            logFilter: "all",
+            lethalityMode: "standard",
+            chaos: 0.35,
+            strictReaping: true,
+            activeArenaKey: "temperate",
+            activeHazardZone: null,
+            supplyDrops: [],
+            fallenMarkers: [],
+            recentDeaths: [],
+            feastTriggered: false,
+            gameOver: false,
+            autoTimer: null,
+            selectedMapTributeId: null,
+            editingLogId: null
+        };
+
+        // Item & Equipment Database
+        const ITEM_DB = {
+            weapons: [
+                { name: "Steel Sword", type: "weapon", power: 8, verb: "slashes" },
+                { name: "Reflex Bow & Arrows", type: "weapon", power: 9, verb: "shoots an arrow through" },
+                { name: "Weighted Trident", type: "weapon", power: 8.5, verb: "impales" },
+                { name: "Heavy Battle Axe", type: "weapon", power: 9.5, verb: "cleaves" },
+                { name: "Venom-Tipped Dagger", type: "weapon", power: 7.5, verb: "stabs" },
+                { name: "Makeshift Spear", type: "weapon", power: 6, verb: "thrusts a spear into" },
+                { name: "Serrated Machete", type: "weapon", power: 7, verb: "slashes" },
+                { name: "Iron Mace", type: "weapon", power: 8, verb: "crushes" }
+            ],
+            armor: [
+                { name: "Kevlar Vest", type: "armor", defense: 6 },
+                { name: "Carapace Shin Guards", type: "armor", defense: 4 },
+                { name: "Capitol Riot Helmet", type: "armor", defense: 5 },
+                { name: "Leather Bracers", type: "armor", defense: 3 }
+            ],
+            medical: [
+                { name: "Medkit & Antibiotics", type: "medical", heal: 45 },
+                { name: "Healing Herbal Poultice", type: "medical", heal: 25 },
+                { name: "Iodine Antiseptic", type: "medical", heal: 20 }
+            ],
+            supplies: [
+                { name: "Water Canteen & Rations", type: "supply", hunger: 45 },
+                { name: "Dried Beef Jerky", type: "supply", hunger: 25 },
+                { name: "Empty Flask", type: "supply", hunger: 10 }
+            ]
+        };
+
+        const DISTRICT_COLORS = {
+            "District 1": "#f59e0b", "District 2": "#ef4444", "District 3": "#3b82f6",
+            "District 4": "#10b981", "District 5": "#8b5cf6", "District 6": "#ec4899",
+            "District 7": "#14b8a6", "District 8": "#f97316", "District 9": "#6366f1",
+            "District 10": "#84cc16", "District 11": "#eab308", "District 12": "#a855f7",
+            "District 13": "#06b6d4", "The Capitol": "#fbbf24"
+        };
+
+        const ARENA_THEMES = {
+            temperate: {
+                title: "74th Temperate Forest & Lake",
+                zones: {
+                    cornucopia: { name: "Golden Cornucopia", cx: 250, cy: 250, r: 65 },
+                    woods: { name: "Whispering Woods", cx: 250, cy: 110, r: 90 },
+                    lake: { name: "Poison Lake & River", cx: 390, cy: 250, r: 80 },
+                    ridge: { name: "Scorched Ridge", cx: 250, cy: 390, r: 90 },
+                    ruins: { name: "Mockingjay Canopy", cx: 110, cy: 250, r: 80 }
+                },
+                hazards: [
+                    { name: "Tracker Jacker Hive", zone: "woods", stat: "agi", desc: "A massive tracker jacker nest drops from the pine canopy!" },
+                    { name: "Boiling Acid Stream", zone: "lake", stat: "int", desc: "Toxic chemical runoff surges through the riverbanks!" },
+                    { name: "Wildfire Wall", zone: "ridge", stat: "str", desc: "A wall of Capitol fire sweeps across the dry ridge!" }
+                ]
+            },
+            clock: {
+                title: "75th Tropical Poison Clock Arena",
+                zones: {
+                    cornucopia: { name: "Quell Cornucopia Island", cx: 250, cy: 250, r: 65 },
+                    woods: { name: "Jungle Quadrant (Lightning 12:00)", cx: 250, cy: 110, r: 90 },
+                    lake: { name: "Saltwater Beach & Tidal Wave", cx: 390, cy: 250, r: 80 },
+                    ridge: { name: "Blood Rain Ravine", cx: 250, cy: 390, r: 90 },
+                    ruins: { name: "Jabberjay Screaming Sector", cx: 110, cy: 250, r: 80 }
+                },
+                hazards: [
+                    { name: "Hourly Lightning Strike", zone: "woods", stat: "agi", desc: "Lightning strikes the tall trees at midnight!" },
+                    { name: "Tidal Wave", zone: "lake", stat: "str", desc: "A massive 50-foot wave slams the beach sector!" },
+                    { name: "Poison Fog", zone: "ruins", stat: "int", desc: "A creeping golden vapor causes skin blisters and asphyxiation!" }
+                ]
+            },
+            frozen: {
+                title: "Sub-Zero Tundra & Ice Caves",
+                zones: {
+                    cornucopia: { name: "Frozen Cornucopia Glacier", cx: 250, cy: 250, r: 65 },
+                    woods: { name: "Pine Snowdrifts", cx: 250, cy: 110, r: 90 },
+                    lake: { name: "Frozen Sledge Lake", cx: 390, cy: 250, r: 80 },
+                    ridge: { name: "Blizzard Ridge", cx: 250, cy: 390, r: 90 },
+                    ruins: { name: "Subterranean Ice Caverns", cx: 110, cy: 250, r: 80 }
+                },
+                hazards: [
+                    { name: "Sub-Zero Blizzard", zone: "ridge", stat: "str", desc: "Freezing winds threaten instant hypothermia!" },
+                    { name: "Thin Ice Crack", zone: "lake", stat: "agi", desc: "The lake ice shatters beneath unwary feet!" }
+                ]
+            },
+            volcanic: {
+                title: "Obsidian Caldera & Magma Vents",
+                zones: {
+                    cornucopia: { name: "Basalt Cornucopia Platform", cx: 250, cy: 250, r: 65 },
+                    woods: { name: "Ash Wastes", cx: 250, cy: 110, r: 90 },
+                    lake: { name: "Boiling Sulfur Springs", cx: 390, cy: 250, r: 80 },
+                    ridge: { name: "Magma Vent Ridge", cx: 250, cy: 390, r: 90 },
+                    ruins: { name: "Obsidian Tunnel Ruins", cx: 110, cy: 250, r: 80 }
+                },
+                hazards: [
+                    { name: "Magma Eruption", zone: "ridge", stat: "agi", desc: "Molten lava bursts from subterranean fissures!" },
+                    { name: "Sulfur Gas Vent", zone: "woods", stat: "int", desc: "Choking sulfur gas fills the ash forest!" }
+                ]
+            },
+            ruins: {
+                title: "Sunken Capitol Skyscraper Ruins",
+                zones: {
+                    cornucopia: { name: "Plaza Monument", cx: 250, cy: 250, r: 65 },
+                    woods: { name: "Overgrown Park", cx: 250, cy: 110, r: 90 },
+                    lake: { name: "Flooded Subway Tunnels", cx: 390, cy: 250, r: 80 },
+                    ridge: { name: "Collapsed Highway Overpass", cx: 250, cy: 390, r: 90 },
+                    ruins: { name: "Mutated Testing Lab Ruins", cx: 110, cy: 250, r: 80 }
+                },
+                hazards: [
+                    { name: "Muttation Pack Hunt", zone: "ruins", stat: "com", desc: "Genetically engineered wolf mutts stalk the ruins!" },
+                    { name: "High-Voltage Grid", zone: "lake", stat: "int", desc: "Downed Capitol power lines electrify the floodwaters!" }
+                ]
+            }
+        };
+
+        let ARENA_ZONES = JSON.parse(JSON.stringify(ARENA_THEMES.temperate.zones));
+        let historyStack = [];
+
+        // Helper functions for tributes, relationships, and game state
+        function getAliveTributes() {
+            return state.tributes.filter(t => t.status === "Alive");
+        }
+
+        function getRelationship(id1, id2) {
+            const key = [id1, id2].sort().join("_");
+            if (state.relationships[key] === undefined) {
+                state.relationships[key] = Math.floor(Math.random() * 41) - 20; // -20 to +20 initial
+            }
+            return state.relationships[key];
+        }
+
+        function adjustRelationship(id1, id2, amount) {
+            const key = [id1, id2].sort().join("_");
+            let val = getRelationship(id1, id2) + amount;
+            state.relationships[key] = Math.max(-100, Math.min(100, val));
+        }
+
+        function checkGameOver() {
+            const alive = getAliveTributes();
+            if (alive.length <= 1 && !state.gameOver) {
+                state.gameOver = true;
+                if (alive.length === 1) {
+                    state.logs.unshift({
+                        day: state.day,
+                        phase: state.phaseType,
+                        entries: [{ type: "system", text: `&#127942; <strong class="text-gold font-display">${alive[0].name} (${alive[0].district})</strong> has survived the Games and is crowned the Victor of the 76th Hunger Games!` }]
+                    });
+                }
+            }
+        }
+
+        function saveSnapshot() {
+            historyStack.push(JSON.stringify({
+                state: {
+                    day: state.day,
+                    phaseType: state.phaseType,
+                    logs: state.logs,
+                    feastTriggered: state.feastTriggered,
+                    gameOver: state.gameOver,
+                    activeHazardZone: state.activeHazardZone,
+                    supplyDrops: state.supplyDrops,
+                    fallenMarkers: state.fallenMarkers,
+                    recentDeaths: state.recentDeaths
+                },
+                tributes: state.tributes,
+                relationships: state.relationships
+            }));
+            if (historyStack.length > 25) historyStack.shift();
+            const btnRewind = document.getElementById("btnRewind");
+            if (btnRewind) btnRewind.disabled = false;
+        }
+
+        function rewindPhase() {
+            if (!historyStack.length) return toast("No previous phase snapshot to rewind to.");
+            const snap = JSON.parse(historyStack.pop());
+            state.day = snap.state.day;
+            state.phaseType = snap.state.phaseType;
+            state.logs = snap.state.logs;
+            state.feastTriggered = snap.state.feastTriggered;
+            state.gameOver = snap.state.gameOver;
+            state.activeHazardZone = snap.state.activeHazardZone;
+            state.supplyDrops = snap.state.supplyDrops;
+            state.fallenMarkers = snap.state.fallenMarkers;
+            state.recentDeaths = snap.state.recentDeaths;
+            state.tributes = snap.tributes;
+            state.relationships = snap.relationships;
+
+            if (!historyStack.length) {
+                const btnRewind = document.getElementById("btnRewind");
+                if (btnRewind) btnRewind.disabled = true;
+            }
+            refreshAllArenaUI();
+            toast("Rewound to previous phase snapshot successfully.");
+        }
+
+        // Form Sync & Enlistment Handlers
+        function syncFormStats() {
+            document.getElementById("vStr").textContent = document.getElementById("sStr").value;
+            document.getElementById("vAgi").textContent = document.getElementById("sAgi").value;
+            document.getElementById("vInt").textContent = document.getElementById("sInt").value;
+            document.getElementById("vCom").textContent = document.getElementById("sCom").value;
+            document.getElementById("vCha").textContent = document.getElementById("sCha").value;
+        }
+
+        function randomizeForm() {
+            document.getElementById("sStr").value = Math.floor(Math.random() * 8) + 3;
+            document.getElementById("sAgi").value = Math.floor(Math.random() * 8) + 3;
+            document.getElementById("sInt").value = Math.floor(Math.random() * 8) + 3;
+            document.getElementById("sCom").value = Math.floor(Math.random() * 8) + 3;
+            document.getElementById("sCha").value = Math.floor(Math.random() * 8) + 3;
+            syncFormStats();
+        }
+
+        function toggleStrictReaping() {
+            state.strictReaping = document.getElementById("chkStrictReaping").checked;
+        }
+
+        function updateArenaThemeLabel() {
+            const val = document.getElementById("sArenaTheme").value;
+            document.getElementById("lblArenaBiome").textContent = val === "random" ? "Randomized Every Games" : ARENA_THEMES[val]?.title || "Custom Arena";
+        }
+
+        function updateLethality() {
+            const val = document.getElementById("sLethality").value;
+            state.lethalityMode = val;
+            const labels = { standard: "Movie Canon (~50% Bloodbath)", brutal: "Brutal Massacre (~65% Bloodbath)", slow: "Slow Burn (~25% Bloodbath)" };
+            document.getElementById("lblLethality").textContent = labels[val] || val;
+        }
+
+        function updateChaos() {
+            const val = parseInt(document.getElementById("sChaos").value);
+            state.chaos = val / 100;
+            document.getElementById("lblChaos").textContent = `${val}% (${val < 25 ? "Cautious" : val < 55 ? "Balanced" : "Chaotic Upset"})`;
+        }
+
+        function handleEnlist(e) {
+            e.preventDefault();
+            const editId = document.getElementById("editTributeId").value;
+            const name = document.getElementById("inpName").value.trim();
+            const district = document.getElementById("inpDistrict").value;
+            const gender = document.getElementById("inpGender").value;
+            const origin = document.getElementById("inpOrigin").value;
+            const str = parseInt(document.getElementById("sStr").value);
+            const agi = parseInt(document.getElementById("sAgi").value);
+            const int = parseInt(document.getElementById("sInt").value);
+            const com = parseInt(document.getElementById("sCom").value);
+            const cha = parseInt(document.getElementById("sCha").value);
+
+            if (!name) return;
+
+            if (state.strictReaping && !editId) {
+                if (district === "District 13" || district === "The Capitol") {
+                    return toast(`Strict Reaping blocks ${district}. Uncheck Strict Reaping to allow Capitol/D13 tributes.`);
+                }
+                const clash = state.roster.find(r => r.district === district && r.gender === gender);
+                if (clash) {
+                    return toast(`Strict Reaping enforces 1 ${gender} per District! ${clash.name} already occupies ${district} (${gender}).`);
+                }
+            }
+
+            if (editId) {
+                const idx = state.roster.findIndex(r => r.id === editId);
+                if (idx !== -1) {
+                    state.roster[idx] = { id: editId, name, district, gender, origin, str, agi, int, com, cha };
+                    toast(`Updated ${name}!`);
+                }
+                cancelEditTribute();
+            } else {
+                if (state.roster.length >= 48) return toast("Maximum 48 tributes reached.");
+                state.roster.push({
+                    id: "trib_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+                    name, district, gender, origin, str, agi, int, com, cha
+                });
+                toast(`Enlisted ${name} (${district})!`);
+                document.getElementById("inpName").value = "";
+                randomizeForm();
+            }
+            renderSetupRoster();
+        }
+
+        function editRosterItem(id) {
+            const t = state.roster.find(r => r.id === id);
+            if (!t) return;
+            document.getElementById("editTributeId").value = t.id;
+            document.getElementById("inpName").value = t.name;
+            document.getElementById("inpDistrict").value = t.district;
+            document.getElementById("inpGender").value = t.gender;
+            document.getElementById("inpOrigin").value = t.origin;
+            document.getElementById("sStr").value = t.str;
+            document.getElementById("sAgi").value = t.agi;
+            document.getElementById("sInt").value = t.int;
+            document.getElementById("sCom").value = t.com;
+            document.getElementById("sCha").value = t.cha;
+            syncFormStats();
+
+            document.getElementById("formHeaderTitle").textContent = `EDIT TRIBUTE: ${t.name.toUpperCase()}`;
+            document.getElementById("btnSubmitTribute").textContent = "SAVE TRIBUTE CHANGES";
+            document.getElementById("btnCancelEdit").classList.remove("hidden");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function cancelEditTribute() {
+            document.getElementById("editTributeId").value = "";
+            document.getElementById("inpName").value = "";
+            document.getElementById("formHeaderTitle").textContent = "+ ENLIST CUSTOM TRIBUTE";
+            document.getElementById("btnSubmitTribute").textContent = "+ ADD TRIBUTE TO ARENA";
+            document.getElementById("btnCancelEdit").classList.add("hidden");
+            randomizeForm();
+        }
+
+        function setLiveLethality(val) {
+            state.lethalityMode = val;
+            const sel = document.getElementById("sLethality");
+            if (sel) sel.value = val;
+            toast(`Live arena lethality updated to ${val}!`);
+        }
+
+        // Preset Loader
+        function loadPreset(key) {
+            if (!PRESETS[key]) return;
+            const source = PRESETS[key];
+            state.roster = [];
+            
+            if (state.strictReaping) {
+                // Pick 1 Male and 1 Female per District (D1 to D12)
+                for (let d = 1; d <= 12; d++) {
+                    const distName = `District ${d}`;
+                    const males = source.filter(c => c.district === distName && c.gender === "Male");
+                    const females = source.filter(c => c.district === distName && c.gender === "Female");
+                    
+                    if (males.length > 0) {
+                        const m = males[Math.floor(Math.random() * males.length)];
+                        state.roster.push({ ...m, id: `trib_p_${d}_m_${Math.random().toString(36).slice(2,5)}` });
+                    }
+                    if (females.length > 0) {
+                        const f = females[Math.floor(Math.random() * females.length)];
+                        state.roster.push({ ...f, id: `trib_p_${d}_f_${Math.random().toString(36).slice(2,5)}` });
+                    }
+                }
+            } else {
+                // Take up to 24 from preset pool
+                const shuffled = [...source].sort(() => 0.5 - Math.random());
+                const picked = shuffled.slice(0, 24);
+                state.roster = picked.map((c, i) => ({ ...c, id: `trib_cust_${i}_${Math.random().toString(36).slice(2,5)}` }));
+            }
+            renderSetupRoster();
+            toast(`Loaded preset roster successfully (${state.roster.length} tributes).`);
+        }
+
+        function autoFillRoster(count) {
+            const pool = ALL_VAULT_CHARACTERS;
+            state.roster = [];
+            if (state.strictReaping) {
+                for (let d = 1; d <= 12; d++) {
+                    const distName = `District ${d}`;
+                    const males = pool.filter(c => c.district === distName && c.gender === "Male");
+                    const females = pool.filter(c => c.district === distName && c.gender === "Female");
+                    if (males.length) {
+                        const m = males[Math.floor(Math.random() * males.length)];
+                        state.roster.push({ ...m, id: `trib_aut_${d}_m_${Math.random().toString(36).slice(2,5)}` });
+                    }
+                    if (females.length) {
+                        const f = females[Math.floor(Math.random() * females.length)];
+                        state.roster.push({ ...f, id: `trib_aut_${d}_f_${Math.random().toString(36).slice(2,5)}` });
+                    }
+                }
+            } else {
+                const shuffled = [...pool].sort(() => 0.5 - Math.random());
+                state.roster = shuffled.slice(0, count).map((c, i) => ({ ...c, id: `trib_aut_${i}_${Math.random().toString(36).slice(2,5)}` }));
+            }
+            renderSetupRoster();
+            toast(`Auto-filled roster with ${state.roster.length} tributes.`);
+        }
+
+        function clearRoster() {
+            state.roster = [];
+            renderSetupRoster();
+            toast("Cleared all tributes from roster.");
+        }
+
+        function renderSetupRoster() {
+            const grid = document.getElementById("setupRosterGrid");
+            const countLbl = document.getElementById("lblRosterCount");
+            if (!grid || !countLbl) return;
+            countLbl.textContent = state.roster.length;
+
+            if (state.roster.length === 0) {
+                grid.innerHTML = `<div class="text-xs text-muted" style="grid-column: 1 / -1; text-align: center; padding: 2.5rem;">No tributes enlisted. Click a preset above or add custom tributes to begin.</div>`;
+                return;
+            }
+
+            grid.innerHTML = state.roster.map(t => {
+                const color = DISTRICT_COLORS[t.district] || "#fbbf24";
+                return `
+                    <div class="tribute-setup-card">
+                        <div class="flex items-center justify-between gap-1" style="margin-bottom: 4px;">
+                            <span class="badge" style="background: ${color}22; color: ${color}; border-color: ${color}55;">${t.district}</span>
+                            <div class="flex items-center gap-1">
+                                <span class="badge badge-gold">${t.gender[0]}</span>
+                                <button onclick="editRosterItem('${t.id}')" class="btn btn-xs" title="Edit tribute">&#9998;</button>
+                                <button onclick="removeRosterItem('${t.id}')" class="btn btn-xs btn-crimson" title="Remove">&#10005;</button>
+                            </div>
+                        </div>
+                        <div class="font-display font-bold text-xs truncate" style="color: #fff;" title="${t.name}">${t.name}</div>
+                        <div class="text-xs text-muted truncate">${t.origin}</div>
+                        <div class="stat-mini-grid">
+                            <div class="stat-mini-box" title="Strength">STR<br><strong class="text-gold">${t.str}</strong></div>
+                            <div class="stat-mini-box" title="Agility">AGI<br><strong class="text-gold">${t.agi}</strong></div>
+                            <div class="stat-mini-box" title="Survival IQ">INT<br><strong class="text-gold">${t.int}</strong></div>
+                            <div class="stat-mini-box" title="Combat Skill">COM<br><strong class="text-gold">${t.com}</strong></div>
+                            <div class="stat-mini-box" title="Charisma">CHA<br><strong class="text-gold">${t.cha}</strong></div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function removeRosterItem(id) {
+            state.roster = state.roster.filter(r => r.id !== id);
+            renderSetupRoster();
+            toast("Removed tribute from roster.");
+        }
+
+        // Vault Modal Management
+        function openVaultModal() {
+            document.getElementById("vaultModal").classList.remove("hidden");
+            renderVaultGrid();
+        }
+
+        function renderVaultGrid() {
+            const search = (document.getElementById("vaultSearchInput")?.value || "").toLowerCase();
+            const cat = document.getElementById("vaultCatFilter")?.value || "ALL";
+            const gen = document.getElementById("vaultGenFilter")?.value || "ALL";
+            const grid = document.getElementById("vaultGridBody");
+            if (!grid) return;
+
+            let filtered = ALL_VAULT_CHARACTERS.filter(c => {
+                if (search && !c.name.toLowerCase().includes(search) && !c.district.toLowerCase().includes(search) && !c.origin.toLowerCase().includes(search)) return false;
+                if (cat !== "ALL" && c.catKey !== cat) return false;
+                if (gen !== "ALL" && c.gender !== gen) return false;
+                return true;
+            });
+
+            document.getElementById("vaultTotalBadge").textContent = ALL_VAULT_CHARACTERS.length;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="text-xs text-muted" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">No matching characters found in Capitol Vault.</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(c => {
+                const color = DISTRICT_COLORS[c.district] || "#fbbf24";
+                const already = state.roster.some(r => r.name === c.name);
+                return `
+                    <div class="tribute-setup-card" style="background: #0f121a;">
+                        <div class="flex items-center justify-between gap-1" style="margin-bottom: 4px;">
+                            <span class="badge" style="background: ${color}22; color: ${color}; border-color: ${color}55;">${c.district}</span>
+                            <span class="badge badge-gold">${c.gender}</span>
+                        </div>
+                        <div class="font-display font-bold text-xs truncate" style="color: #fff;">${c.name}</div>
+                        <div class="text-xs text-muted truncate">${c.origin}</div>
+                        <div class="stat-mini-grid" style="margin-bottom: 6px;">
+                            <div class="stat-mini-box">STR ${c.str}</div>
+                            <div class="stat-mini-box">AGI ${c.agi}</div>
+                            <div class="stat-mini-box">INT ${c.int}</div>
+                            <div class="stat-mini-box">COM ${c.com}</div>
+                            <div class="stat-mini-box">CHA ${c.cha}</div>
+                        </div>
+                        <button onclick='draftVaultCharacter(${JSON.stringify(c)})' class="btn btn-xs ${already ? '' : 'btn-gold'} w-full">
+                            ${already ? '&#10003; Enlisted' : '+ Draft to Roster'}
+                        </button>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function draftVaultCharacter(c) {
+            if (state.roster.some(r => r.name === c.name)) return toast(`${c.name} is already in the roster.`);
+            if (state.roster.length >= 48) return toast("Maximum 48 tributes reached.");
+            state.roster.push({
+                ...c,
+                id: `trib_vault_${Date.now()}_${Math.random().toString(36).slice(2,5)}`
+            });
+            renderSetupRoster();
+            renderVaultGrid();
+            toast(`Drafted ${c.name} into the arena!`);
+        }
+
+        // Launch Simulation Engine
+        function launchHungerGames() {
+            if (state.roster.length < 2) return toast("You need at least 2 tributes to launch the Games.");
+            
+            // Initialize Tributes with Survival Vitals
+            state.tributes = state.roster.map(r => ({
+                ...r,
+                hp: 100,
+                maxHp: 100,
+                hunger: 100,
+                thirst: 100,
+                sanity: 100,
+                infection: 0,
+                kills: 0,
+                inventory: [],
+                status: "Alive",
+                zone: "cornucopia"
+            }));
+
+            // Randomize Arena Theme if requested
+            const themeSel = document.getElementById("sArenaTheme").value;
+            state.activeArenaKey = themeSel === "random" ? Object.keys(ARENA_THEMES)[Math.floor(Math.random() * Object.keys(ARENA_THEMES).length)] : themeSel;
+            ARENA_ZONES = JSON.parse(JSON.stringify(ARENA_THEMES[state.activeArenaKey].zones));
+
+            // Switch UI Views
+            document.getElementById("setupView").classList.add("hidden");
+            document.getElementById("arenaView").classList.remove("hidden");
+            document.getElementById("hdrStatusBar").classList.remove("hidden");
+            document.getElementById("btnFallenSky").classList.remove("hidden");
+            document.getElementById("btnNewRoster").classList.remove("hidden");
+
+            state.day = 1;
+            state.phaseType = "Bloodbath";
+            state.logs = [];
+            state.fallenMarkers = [];
+            state.recentDeaths = [];
+            state.supplyDrops = [];
+            state.feastTriggered = false;
+            state.gameOver = false;
+            historyStack = [];
+
+            // Execute Cornucopia Bloodbath
+            executeBloodbathPhase();
+            refreshAllArenaUI();
+            toast("The 76th Hunger Games have officially launched!");
+        }
+
+        // Balanced Cornucopia Bloodbath (Lore-accurate looting: only agile/aggressive grab gear)
+        function executeBloodbathPhase() {
+            const alive = getAliveTributes();
+            if (alive.length < 2) return;
+
+            let logEntries = [];
+            let deathsThisPhase = 0;
+
+            // Only 35% of tributes successfully grab items at the bloody start; others flee empty-handed or skirmish
+            alive.forEach(t => {
+                const grabChance = (t.agi * 0.05) + (t.com * 0.04) + 0.15;
+                if (Math.random() < grabChance && ITEM_DB.weapons.length > 0) {
+                    const pool = Math.random() < 0.6 ? ITEM_DB.weapons : (Math.random() < 0.5 ? ITEM_DB.armor : ITEM_DB.supplies);
+                    const item = JSON.parse(JSON.stringify(pool[Math.floor(Math.random() * pool.length)]));
+                    item.provenance = "Grabbed in the initial Cornucopia bloodbath";
+                    t.inventory.push(item);
+                }
+            });
+
+            // Moderate initial casualties (approx 3-5 deaths in the bloodbath, not 50%)
+            const potentialVictims = [...alive].sort(() => 0.5 - Math.random());
+            const targetDeaths = Math.min(potentialVictims.length - 2, Math.floor(Math.random() * 3) + 2);
+
+            for (let i = 0; i < targetDeaths; i++) {
+                const victim = potentialVictims[i];
+                if (!victim || victim.status !== "Alive") continue;
+                
+                const attackers = alive.filter(a => a.id !== victim.id && a.status === "Alive");
+                const attacker = attackers.length ? attackers[Math.floor(Math.random() * attackers.length)] : null;
+
+                victim.status = "Fallen";
+                victim.deathDay = state.day;
+                victim.deathPhase = state.phaseType;
+                state.recentDeaths.push(victim.id);
+                state.fallenMarkers.push({ name: victim.name, district: victim.district, x: 250 + (Math.random()*60-30), y: 250 + (Math.random()*60-30) });
+                deathsThisPhase++;
+
+                if (attacker) {
+                    attacker.kills++;
+                    const weapon = attacker.inventory.find(item => item.type === 'weapon');
+                    const verb = weapon ? weapon.verb : "slays";
+                    const weaponStr = weapon ? ` with a ${weapon.name}` : " bare-handed in the chaotic scramble";
+                    logEntries.push({
+                        type: "combat",
+                        text: `<strong class="t-link" onclick="inspectTribute('${attacker.id}')">${attacker.name}</strong> (${attacker.district}) ${verb} <strong class="t-link" onclick="inspectTribute('${victim.id}')">${victim.name}</strong> (${victim.district})${weaponStr} at the Cornucopia!`
+                    });
+                } else {
+                    logEntries.push({
+                        type: "combat",
+                        text: `<strong class="t-link" onclick="inspectTribute('${victim.id}')">${victim.name}</strong> (${victim.district}) was trampled to death during the chaotic Cornucopia bloodbath.`
+                    });
+                }
+            }
+
+            if (logEntries.length === 0) {
+                logEntries.push({ type: "system", text: "The tributes cautiously scavenge what they can from the Cornucopia and scatter into the arena biomes as the gong echoes." });
+            }
+
+            state.logs.unshift({ day: state.day, phase: state.phaseType, entries: logEntries });
+            saveSnapshot();
+        }
+
+        // Combat Engine enforcing strict weapon dependency & 7-day pacing
+        function executeStandardPhase() {
+            const alive = getAliveTributes();
+            if (alive.length <= 1) {
+                checkGameOver();
+                return;
+            }
+
+            // Progression: ~14 phases total (7 days + 7 nights)
+            if (state.phaseType === "Bloodbath") {
+                state.phaseType = "Day 1";
+            } else if (state.phaseType.startsWith("Day")) {
+                const dNum = parseInt(state.phaseType.replace("Day ", ""));
+                state.phaseType = `Night ${dNum}`;
+            } else if (state.phaseType.startsWith("Night")) {
+                const dNum = parseInt(state.phaseType.replace("Night ", ""));
+                state.day = dNum + 1;
+                state.phaseType = `Day ${state.day}`;
+            }
+
+            let logEntries = [];
+            let shuffled = [...alive].sort(() => 0.5 - Math.random());
+
+            // Process interactions / combat for subset of living tributes
+            for (let i = 0; i < shuffled.length; i += 2) {
+                if (i + 1 >= shuffled.length) break;
+                const t1 = shuffled[i];
+                const t2 = shuffled[i+1];
+                if (t1.status !== "Alive" || t2.status !== "Alive") continue;
+
+                const rel = getRelationship(t1.id, t2.id);
+                
+                // Friendly or Alliance interaction
+                if (rel > 25 && Math.random() < 0.5) {
+                    adjustRelationship(t1.id, t2.id, 8);
+                    logEntries.push({
+                        type: "alliance",
+                        text: `<strong class="t-link" onclick="inspectTribute('${t1.id}')">${t1.name}</strong> and <strong class="t-link" onclick="inspectTribute('${t2.id}')">${t2.name}</strong> share rations and reinforce their alliance in the ${ARENA_ZONES[t1.zone]?.name || 'arena'}.`
+                    });
+                } 
+                // Hostile combat interaction
+                else if (rel < -10 || Math.random() < 0.38) {
+                    // Check weapons
+                    const w1 = t1.inventory.find(i => i.type === 'weapon');
+                    const w2 = t2.inventory.find(i => i.type === 'weapon');
+
+                    const score1 = t1.str * 0.3 + t1.com * 0.4 + (w1 ? w1.power * 2.5 : 2) + (Math.random() * 10 * state.chaos);
+                    const score2 = t2.str * 0.3 + t2.com * 0.4 + (w2 ? w2.power * 2.5 : 2) + (Math.random() * 10 * state.chaos);
+
+                    const winner = score1 >= score2 ? t1 : t2;
+                    const loser = score1 >= score2 ? t2 : t1;
+                    const winWeapon = winner === t1 ? w1 : w2;
+
+                    loser.status = "Fallen";
+                    loser.deathDay = state.day;
+                    loser.deathPhase = state.phaseType;
+                    state.recentDeaths.push(loser.id);
+                    winner.kills++;
+                    state.fallenMarkers.push({ name: loser.name, district: loser.district, x: 150 + Math.random()*200, y: 150 + Math.random()*200 });
+
+                    // Loot transfer
+                    if (loser.inventory.length > 0) {
+                        const lootedItem = loser.inventory.pop();
+                        lootedItem.provenance = `Looted from fallen rival ${loser.name} on Day ${state.day}`;
+                        winner.inventory.push(lootedItem);
+                    }
+
+                    adjustRelationship(t1.id, t2.id, -25);
+                    const verb = winWeapon ? winWeapon.verb : "overpowers and eliminates";
+                    const weaponStr = winWeapon ? ` with a ${winWeapon.name}` : " in brutal close-quarters combat";
+
+                    logEntries.push({
+                        type: "combat",
+                        text: `<strong class="t-link" onclick="inspectTribute('${winner.id}')">${winner.name}</strong> (${winner.district}) ${verb} <strong class="t-link" onclick="inspectTribute('${loser.id}')">${loser.name}</strong> (${loser.district})${weaponStr}!`
+                    });
+                } else {
+                    // Peaceful foraging / survival event
+                    logEntries.push({
+                        type: "survival",
+                        text: `<strong class="t-link" onclick="inspectTribute('${t1.id}')">${t1.name}</strong> forages safely for clean water and edible roots.`
+                    });
+                }
+            }
+
+            // Check if final victor is crowned (approx day 7-10)
+            const remaining = getAliveTributes();
+            if (remaining.length === 1) {
+                state.gameOver = true;
+                logEntries.push({
+                    type: "system",
+                    text: `&#127942; <strong class="text-gold font-display">${remaining[0].name} (${remaining[0].district})</strong> has survived the Games and is crowned the Victor of the 76th Hunger Games!`
+                });
+            }
+
+            state.logs.unshift({ day: state.day, phase: state.phaseType, entries: logEntries });
+            saveSnapshot();
+            refreshAllArenaUI();
+        }
+
+        function proceedNextPhase() {
+            if (state.gameOver) return toast("The Games have already concluded with a Victor!");
+            if (state.phaseType === "Bloodbath") {
+                state.phaseType = "Day 1";
+            } else {
+                executeStandardPhase();
+            }
+            refreshAllArenaUI();
+        }
+
+        function refreshAllArenaUI() {
+            const alive = getAliveTributes();
+            const total = state.tributes.length;
+            const dead = total - alive.length;
+
+            document.getElementById("hdrPhase").textContent = state.phaseType;
+            document.getElementById("hdrAlive").textContent = alive.length;
+            document.getElementById("hdrTotal").textContent = total;
+            document.getElementById("hdrFallen").textContent = dead;
+            document.getElementById("fallenBadge").textContent = dead;
+
+            document.getElementById("badgePhaseType").textContent = state.phaseType;
+            document.getElementById("lblPhaseHeadline").textContent = `${state.day === 1 && state.phaseType === 'Bloodbath' ? 'Day 1 — The Cornucopia Bloodbath' : state.phaseType}`;
+
+            renderVitalsSidebar();
+            renderEventLogFeed();
+            renderArenaMap();
+        }
+
+        function renderVitalsSidebar() {
+            const container = document.getElementById("vitalsList");
+            const filter = document.getElementById("vitalsFilter")?.value || "alive";
+            if (!container) return;
+
+            let list = state.tributes;
+            if (filter === "alive") list = list.filter(t => t.status === "Alive");
+            else if (filter === "dead") list = list.filter(t => t.status !== "Alive");
+
+            container.innerHTML = list.map(t => {
+                const color = DISTRICT_COLORS[t.district] || "#fbbf24";
+                const isDead = t.status !== "Alive";
+                return `
+                    <div class="vital-card ${isDead ? 'dead' : ''}" onclick="inspectTribute('${t.id}')">
+                        <div class="flex items-center justify-between gap-1">
+                            <span class="badge" style="background: ${color}22; color: ${color};">${t.district}</span>
+                            <span class="font-mono text-xs ${isDead ? 'text-crimson' : 'text-emerald'}">${isDead ? 'FALLEN' : 'HP: ' + t.hp + '%'}</span>
+                        </div>
+                        <div class="font-display font-bold text-xs truncate" style="margin-top: 2px;">${t.name}</div>
+                        <div class="text-xs text-muted">Kills: <strong class="text-gold">${t.kills}</strong> | Items: <strong class="text-cyan">${t.inventory.length}</strong></div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function renderEventLogFeed() {
+            const feed = document.getElementById("eventLogFeed");
+            if (!feed) return;
+
+            let html = "";
+            state.logs.forEach(log => {
+                let filteredEntries = log.entries;
+                if (state.logFilter !== "all") {
+                    filteredEntries = log.entries.filter(e => e.type === state.logFilter);
+                }
+                if (filteredEntries.length === 0 && state.logFilter !== "all") return;
+
+                html += `<div style="margin-bottom: 0.75rem;"><div class="font-display font-bold text-xs text-gold" style="margin-bottom: 4px;">&#9873; ${log.phase} (Day ${log.day})</div>`;
+                filteredEntries.forEach(entry => {
+                    html += `<div class="event-card event-${entry.type}">${entry.text}</div>`;
+                });
+                html += `</div>`;
+            });
+            feed.innerHTML = html || `<div class="text-xs text-muted" style="text-align: center; padding: 2rem;">No events logged for this filter.</div>`;
+        }
+
+        function setLogFilter(type) {
+            state.logFilter = type;
+            ['all', 'combat', 'alliance', 'survival', 'gamemaker'].forEach(t => {
+                const btn = document.getElementById(`flt-${t}`);
+                if (btn) {
+                    btn.className = `btn btn-xs ${t === type ? 'btn-gold' : ''}`;
+                }
+            });
+            renderEventLogFeed();
+        }
+
+        function renderArenaMap() {
+            const tributeLayer = document.getElementById("mapTributeLayer");
+            const fallenLayer = document.getElementById("mapFallenLayer");
+            if (!tributeLayer || !fallenLayer) return;
+
+            fallenLayer.innerHTML = state.fallenMarkers.map(f => `
+                <text x="${f.x}" y="${f.y}" text-anchor="middle" fill="#ef4444" font-size="11" font-family="monospace" font-weight="bold">&#10006;</text>
+            `).join("");
+
+            const alive = getAliveTributes();
+            tributeLayer.innerHTML = alive.map((t, idx) => {
+                let cx = 250 + Math.sin(idx * 1.5) * (70 + (idx * 5) % 90);
+                let cy = 250 + Math.cos(idx * 1.5) * (70 + (idx * 5) % 90);
+                const color = DISTRICT_COLORS[t.district] || "#fbbf24";
+
+                return `
+                    <g onclick="inspectTribute('${t.id}')" style="cursor: pointer;">
+                        <circle cx="${cx}" cy="${cy}" r="6" fill="${color}" stroke="#07080c" stroke-width="1.5" />
+                        <text x="${cx}" y="${cy - 9}" text-anchor="middle" fill="#f1f5f9" font-size="8" font-family="sans-serif" font-weight="bold">${t.name.split(' ')[0]}</text>
+                    </g>
+                `;
+            }).join("");
+        }
+
+        function inspectTribute(id) {
+            const t = state.tributes.find(tr => tr.id === id);
+            if (!t) return;
+            state.selectedMapTributeId = id;
+
+            const box = document.getElementById("mapInspectorBox");
+            if (box) {
+                const color = DISTRICT_COLORS[t.district] || "#fbbf24";
+                box.innerHTML = `
+                    <div style="padding: 0.8rem;">
+                        <div class="flex items-center justify-between" style="margin-bottom: 6px;">
+                            <span class="badge" style="background: ${color}22; color: ${color};">${t.district}</span>
+                            <span class="badge ${t.status === 'Alive' ? 'badge-emerald' : 'badge-crimson'}">${t.status}</span>
+                        </div>
+                        <div class="font-display font-bold text-base" style="color: #fff;">${t.name}</div>
+                        <div class="text-xs text-muted" style="margin-bottom: 8px;">Origin: ${t.origin} | Gender: ${t.gender}</div>
+                        
+                        <div style="background: var(--bg-obsidian); padding: 0.5rem; border-radius: 6px; margin-bottom: 8px;">
+                            <div class="text-xs text-gold font-bold" style="margin-bottom: 4px;">TRIBUTE STATS</div>
+                            <div class="stat-mini-grid">
+                                <div class="stat-mini-box">STR<br><strong>${t.str}</strong></div>
+                                <div class="stat-mini-box">AGI<br><strong>${t.agi}</strong></div>
+                                <div class="stat-mini-box">INT<br><strong>${t.int}</strong></div>
+                                <div class="stat-mini-box">COM<br><strong>${t.com}</strong></div>
+                                <div class="stat-mini-box">CHA<br><strong>${t.cha}</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="text-xs text-gold font-bold" style="margin-bottom: 4px;">INVENTORY &amp; PROVENANCE (${t.inventory.length})</div>
+                        <div class="flex flex-col gap-1" style="max-height: 120px; overflow-y: auto;">
+                            ${t.inventory.length === 0 ? '<div class="text-xs text-dim">No items currently equipped.</div>' : t.inventory.map(inv => `
+                                <div style="background: #0f121a; padding: 4px 6px; border-radius: 5px; font-size: 0.75rem; border: 1px solid var(--border-subtle);">
+                                    <strong>${inv.name}</strong> <span class="text-dim">(${inv.type})</span><br>
+                                    <span class="text-muted" style="font-size: 0.68rem;">Provenance: ${inv.provenance || 'Initial issue'}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function openFallenModal() {
+            const body = document.getElementById("fallenBody");
+            const dead = state.tributes.filter(t => t.status !== "Alive");
+            if (!body) return;
+
+            body.innerHTML = dead.length === 0 ? `<div class="text-xs text-muted" style="text-align: center; padding: 2rem;">No tributes have fallen yet. The night sky is clear.</div>` :
+                `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.65rem; padding: 1rem;">` +
+                dead.map(t => {
+                    const color = DISTRICT_COLORS[t.district] || "#fbbf24";
+                    return `
+                        <div style="background: #0c0e14; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 0.6rem; text-align: center;">
+                            <span class="badge" style="background: ${color}22; color: ${color};">${t.district}</span>
+                            <div class="font-display font-bold text-xs" style="color: #fff; margin-top: 4px;">${t.name}</div>
+                            <div class="text-xs text-crimson" style="margin-top: 2px;">Eliminated Day ${t.deathDay} (${t.deathPhase})</div>
+                        </div>
+                    `;
+                }).join('') + `</div>`;
+
+            document.getElementById("fallenModal").classList.remove("hidden");
+        }
+
+        function openGamemakerActionModal(type) {
+            const body = document.getElementById("gmModalBody");
+            const title = document.getElementById("gmModalTitle");
+            if (!body || !title) return;
+
+            const alive = getAliveTributes();
+
+            if (type === 'sponsor') {
+                title.textContent = "SEND SILVER SPONSOR PARACHUTE";
+                body.innerHTML = `
+                    <div>
+                        <label class="text-xs text-muted block" style="margin-bottom: 4px;">SELECT RECIPIENT</label>
+                        <select id="gmSponsorTrib" class="w-full">
+                            ${alive.map(t => `<option value="${t.id}">${t.name} (${t.district})</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-muted block" style="margin-bottom: 4px;">SELECT ITEM</label>
+                        <select id="gmSponsorItem" class="w-full">
+                            <option value="sword">Steel Sword (Weapon)</option>
+                            <option value="bow">Reflex Bow (Weapon)</option>
+                            <option value="medkit">Medkit & Antibiotics (Heal)</option>
+                            <option value="food">Rations & Clean Water (Supply)</option>
+                        </select>
+                    </div>
+                    <button onclick="executeSponsorDrop()" class="btn btn-gold w-full" style="margin-top: 0.5rem;">Launch Parachute</button>
+                `;
+            } else if (type === 'hazard') {
+                title.textContent = "TRIGGER ARENA HAZARD";
+                body.innerHTML = `
+                    <div>
+                        <label class="text-xs text-muted block" style="margin-bottom: 4px;">SELECT HAZARD EVENT</label>
+                        <select id="gmHazardType" class="w-full">
+                            <option value="fire">Forest Wildfire Swarm</option>
+                            <option value="mutts">Mutated Wolf Pack Attack</option>
+                            <option value="fog">Poisonous Choking Fog</option>
+                        </select>
+                    </div>
+                    <button onclick="executeHazardTrigger()" class="btn btn-crimson w-full" style="margin-top: 0.5rem;">Unleash Hazard</button>
+                `;
+            } else {
+                title.textContent = "GAMEMAKER DIRECTIVE SUITE";
+                body.innerHTML = `<div class="text-xs text-muted">Use sidebar buttons to override vitals, drop gear, or force encounters.</div>`;
+            }
+
+            document.getElementById("gmActionModal").classList.remove("hidden");
+        }
+
+        function executeSponsorDrop() {
+            const tribId = document.getElementById("gmSponsorTrib")?.value;
+            const itemKey = document.getElementById("gmSponsorItem")?.value;
+            const t = state.tributes.find(tr => tr.id === tribId);
+            if (!t) return;
+
+            let item = { name: "Capitol Luxury Parachute Gift", type: "supply", provenance: "Capitol Sponsor Parachute" };
+            if (itemKey === 'sword') item = { name: "Capitol Steel Sword", type: "weapon", power: 9, verb: "expertly strikes", provenance: "Capitol Sponsor Parachute" };
+            else if (itemKey === 'bow') item = { name: "Capitol Reflex Bow", type: "weapon", power: 9.5, verb: "snipes", provenance: "Capitol Sponsor Parachute" };
+            else if (itemKey === 'medkit') item = { name: "Capitol Advanced Medkit", type: "medical", heal: 60, provenance: "Capitol Sponsor Parachute" };
+
+            t.inventory.push(item);
+            state.logs.unshift({
+                day: state.day,
+                phase: state.phaseType,
+                entries: [{ type: "gamemaker", text: `&#129666; The Gamemakers drop a silver parachute containing a <strong class="text-gold">${item.name}</strong> to <strong class="t-link" onclick="inspectTribute('${t.id}')">${t.name}</strong> (${t.district})!` }]
+            });
+            closeModal('gmActionModal');
+            refreshAllArenaUI();
+            toast(`Sponsor gift delivered to ${t.name}!`);
+        }
+
+        function executeHazardTrigger() {
+            const alive = getAliveTributes();
+            if (alive.length === 0) return;
+            const victim = alive[Math.floor(Math.random() * alive.length)];
+            victim.hp = Math.max(0, victim.hp - 45);
+            if (victim.hp <= 0) {
+                victim.status = "Fallen";
+                victim.deathDay = state.day;
+                victim.deathPhase = state.phaseType;
+                state.recentDeaths.push(victim.id);
+                state.fallenMarkers.push({ name: victim.name, district: victim.district, x: 250, y: 250 });
+            }
+
+            state.logs.unshift({
+                day: state.day,
+                phase: state.phaseType,
+                entries: [{ type: "gamemaker", text: `&#128293; A sudden Capitol Arena Hazard strikes! <strong class="t-link" onclick="inspectTribute('${victim.id}')">${victim.name}</strong> (${victim.district}) takes severe damage!` }]
+            });
+            closeModal('gmActionModal');
+            refreshAllArenaUI();
+            toast("Arena hazard unleashed!");
+        }
+
+        function triggerManualFeast() {
+            if (state.feastTriggered) return toast("The Cornucopia Feast has already been triggered.");
+            state.feastTriggered = true;
+            state.logs.unshift({
+                day: state.day,
+                phase: state.phaseType,
+                entries: [{ type: "gamemaker", text: `&#127869; The Gamemakers sound the trumpets for the Cornucopia Feast! Backpacks containing vital medicine and weapons await the surviving tributes at the Cornucopia.` }]
+            });
+            refreshAllArenaUI();
+            toast("Cornucopia Feast triggered!");
+        }
+
+        let isAutoPlaying = false;
+        function toggleAutoPlay() {
+            isAutoPlaying = !isAutoPlaying;
+            const btn = document.getElementById("btnAutoPlay");
+            if (isAutoPlaying) {
+                btn.textContent = "⏸ Pause Sim";
+                state.autoTimer = setInterval(() => {
+                    if (state.gameOver || getAliveTributes().length <= 1) {
+                        clearInterval(state.autoTimer);
+                        isAutoPlaying = false;
+                        btn.textContent = "▶ Auto-Sim";
+                        return;
+                    }
+                    proceedNextPhase();
+                }, 2200);
+                toast("Auto-simulation active.");
+            } else {
+                if (state.autoTimer) clearInterval(state.autoTimer);
+                btn.textContent = "▶ Auto-Sim";
+                toast("Auto-simulation paused.");
+            }
+        }
+
+        loadPreset("allStarChaos");
+    </script>
+</body>
+</html>
